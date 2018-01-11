@@ -29,8 +29,15 @@ timestamp_format = "%R"
 
 root_id = 0
 
+git-cmd = (external git)
+
+bold_prompt = $false
+
 fn -colored [what color]{
   if (!=s $color default) {
+    if $bold_prompt {
+      color = $color";bold"
+    }
     edit:styled $what $color
   } else {
     put $what
@@ -45,7 +52,7 @@ fn prompt_segment [style @texts]{
 # Return the git branch name of the current directory
 fn -git_branch_name {
   out = ""
-  err = ?(out = (git branch 2>/dev/null | eawk [line @f]{
+  err = ?(out = ($git-cmd branch 2>/dev/null | eawk [line @f]{
         if (eq $f[0] "*") {
           if (and (> (count $f) 2) (eq $f[2] "detached")) {
             replaces ')' '' $f[4]
@@ -60,7 +67,7 @@ fn -git_branch_name {
 # Return whether the current git repo is "dirty" (modified in any way)
 fn -git_is_dirty {
   out = []
-  err = ?(out = [(git ls-files --exclude-standard -om 2>/dev/null)])
+  err = ?(out = [($git-cmd ls-files --exclude-standard -om 2>/dev/null)])
   > (count $out) 0
 }
 
@@ -102,7 +109,7 @@ fn segment_timestamp {
 }
 
 fn segment_arrow {
-  edit:styled $glyph[prompt]" " green
+  -colored $glyph[prompt]" " green
 }
 
 # List of built-in segments
