@@ -1,5 +1,4 @@
 {
-    "name": "zzamboni's Elvish themes",
-    "maintainer": "Diego Zamboni <diego@zzamboni.org>",
-    "homepage": "https://github.com/zzamboni/theme.elv"
+    "description": "zzamboni's Elvish themes",
+    "maintainers": ["Diego Zamboni <diego@zzamboni.org>"]
 }
