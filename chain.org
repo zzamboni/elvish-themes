@@ -1,11 +1,16 @@
 #+PROPERTY: header-args:elvish :tangle chain.elv
-#+PROPERTY: header-args :mkdirp yes :comments no 
+#+PROPERTY: header-args :mkdirp yes :comments no
 #+STARTUP: indent
 
 
-#+TITLE:  Elvish "Chain" theme prompt
+#+TITLE: Elvish Chain theme prompt
 #+AUTHOR: Diego Zamboni
-#+EMAIL:  diego@zzamboni.org
+#+EMAIL: diego@zzamboni.org
+
+#+BEGIN_SRC elvish :exports none
+  # See https://github.com/zzamboni/vcsh_elvish/blob/master/.elvish/lib/theme/chain.org
+  # for the source code from which this file is generated.
+#+END_SRC
 
 * Introduction
 
@@ -80,13 +85,6 @@ Each element can be any of the following:
 
 ** Base code and default values
 
-First, we insert a link to this file in the source code output.
-
-#+BEGIN_SRC elvish
-  # See https://github.com/zzamboni/vcsh_elvish/blob/master/.elvish/lib/theme/chain.org
-  # for the source code from which this file is generated.
-#+END_SRC
-
 Load the regular expression library.
 
 #+BEGIN_SRC elvish
@@ -95,9 +93,9 @@ Load the regular expression library.
 
 We use [[https://github.com/muesli/elvish-libs/blob/master/git.elv][muesli's git library]] for the git functions.
 
-#+begin_src elvish
+#+BEGIN_SRC elvish
   use github.com/muesli/elvish-libs/git
-#+end_src
+#+END_SRC
 
 Set up the default values for the chains (all can be configured by
 assigning to the appropriate variable):
@@ -152,9 +150,9 @@ User ID that will trigger the "su" segment. Defaults to root.
 
 Whether the prompt should be bold.
 
-#+begin_src elvish
+#+BEGIN_SRC elvish
   bold_prompt = $false
-#+end_src
+#+END_SRC
 
 ** General utility functions
 
@@ -193,11 +191,11 @@ The =-is-git-dirty= function is simply a wrapper that returns =$true= if
 the current directory is unclean in any way: modified (dirty) files,
 untracked files, or staged but uncommitted files.
 
-#+begin_src elvish
+#+BEGIN_SRC elvish
   fn -is-git-dirty {
     > (+ (git:change_count)) 0
   }
-#+end_src
+#+END_SRC
 
 Based on this, we define the two segment functions. Please note
 that these functions only produce an output if the current directory
@@ -210,7 +208,7 @@ contains a git repository.
       prompt_segment $segment_style[git_branch] $glyph[git_branch] $branch
     }
   }
-
+  
   fn segment_git_dirty {
     if (-is-git-dirty) {
       prompt_segment $segment_style[git_dirty] $glyph[git_dirty]
@@ -351,7 +349,7 @@ prompts, respectively. These are basically wrappers around
   fn prompt [@skipcheck]{
     put (-build-chain $prompt_segments)
   }
-
+  
   fn rprompt [@skipcheck]{
     put (-build-chain $rprompt_segments)
   }
