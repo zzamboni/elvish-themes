@@ -195,7 +195,7 @@ untracked files, or staged but uncommitted files.
 
 #+begin_src elvish
   fn -is-git-dirty {
-    or (> (git:dirty_count) 0) (> (git:staged_count) 0) (> (git:untracked_count) 0)
+    > (+ (git:change_count)) 0
   }
 #+end_src
 

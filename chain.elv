@@ -50,7 +50,7 @@ fn prompt_segment [style @texts]{
 }
 
 fn -is-git-dirty {
-  or (> (git:dirty_count) 0) (> (git:staged_count) 0) (> (git:untracked_count) 0)
+  > (+ (git:change_count)) 0
 }
 
 fn segment_git_branch {
