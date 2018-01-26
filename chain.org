@@ -18,6 +18,22 @@ Ported to Elvish by Diego Zamboni <diego@zzamboni.org>.
 This file is written in [[http://www.howardism.org/Technical/Emacs/literate-programming-tutorial.html][literate programming style]], to make it easy
 to explain. See [[file:chain.elv][chain.elv]] for the generated file.
 
+* Table of Contents                                          :TOC_3:noexport:
+- [[#introduction][Introduction]]
+- [[#use][Use]]
+- [[#implementation][Implementation]]
+  - [[#base-code-and-default-values][Base code and default values]]
+  - [[#general-utility-functions][General utility functions]]
+  - [[#built-in-segment-definitions][Built-in Segment Definitions]]
+    - [[#git_branch-and-git_dirty][=git_branch= and =git_dirty=]]
+    - [[#dir][=dir=]]
+    - [[#su][=su=]]
+    - [[#timestamp][=timestamp=]]
+    - [[#arrow][=arrow=]]
+  - [[#default-segment-declarations][Default segment declarations]]
+  - [[#chain--and-prompt-building-functions][Chain- and prompt-building functions]]
+  - [[#setup][Setup]]
+
 * Use
 
 Put [[file:chain.elv][chain.elv]] in =~/.elvish/lib/theme/= and add the following to your =~/.elvish/rc.elv= file:
