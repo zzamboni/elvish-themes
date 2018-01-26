@@ -93,6 +93,12 @@ Load the regular expression library.
   use re
 #+END_SRC
 
+We use [[https://github.com/muesli/elvish-libs/blob/master/git.elv][muesli's git library]] for the git functions.
+
+#+begin_src elvish
+  use github.com/muesli/elvish-libs/git
+#+end_src
+
 Set up the default values for the chains (all can be configured by
 assigning to the appropriate variable):
 
@@ -144,13 +150,6 @@ User ID that will trigger the "su" segment. Defaults to root.
   root_id = 0
 #+END_SRC
 
-The git command to use. Defaults to the external =git= command, but can
-be assigned a closure or a function.
-
-#+begin_src elvish
-  git-cmd = (external git)
-#+end_src
-
 Whether the prompt should be bold.
 
 #+begin_src elvish
@@ -190,49 +189,30 @@ This is where the built-in segments are defined.
 
 *** =git_branch= and =git_dirty=
 
-We have two git-related segments: showing the current branch name
-(if any) and whether the current repository is dirty. To support
-these, we first define two functions which determine the
-corresponding information about the current directory.
+The =-is-git-dirty= function is simply a wrapper that returns =$true= if
+the current directory is unclean in any way: modified (dirty) files,
+untracked files, or staged but uncommitted files.
 
-#+BEGIN_SRC elvish
-  # Return the git branch name of the current directory
-  fn -git_branch_name {
-    out = ""
-    err = ?(out = ($git-cmd branch 2>/dev/null | eawk [line @f]{
-          if (eq $f[0] "*") {
-            if (and (> (count $f) 2) (eq $f[2] "detached")) {
-              replaces ')' '' $f[4]
-            } else {
-              echo $f[1]
-            }
-          }
-    }))
-    put $out
+#+begin_src elvish
+  fn -is-git-dirty {
+    or (> (git:dirty_count) 0) (> (git:staged_count) 0) (> (git:untracked_count) 0)
   }
+#+end_src
 
-  # Return whether the current git repo is "dirty" (modified in any way)
-  fn -git_is_dirty {
-    out = []
-    err = ?(out = [($git-cmd ls-files --exclude-standard -om 2>/dev/null)])
-    > (count $out) 0
-  }
-#+END_SRC
-
-Based on these, we define the two segment functions. Please note
-that these functions only produce an output if the current
-directory contains a git repository.
+Based on this, we define the two segment functions. Please note
+that these functions only produce an output if the current directory
+contains a git repository.
 
 #+BEGIN_SRC elvish
   fn segment_git_branch {
-    branch = (-git_branch_name)
+    branch = (git:branch_name)
     if (not-eq $branch "") {
       prompt_segment $segment_style[git_branch] $glyph[git_branch] $branch
     }
   }
 
   fn segment_git_dirty {
-    if (-git_is_dirty) {
+    if (-is-git-dirty) {
       prompt_segment $segment_style[git_dirty] $glyph[git_dirty]
     }
   }

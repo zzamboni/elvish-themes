@@ -3,6 +3,8 @@
 
 use re
 
+use github.com/muesli/elvish-libs/git
+
 prompt_segments = [ su dir git_branch git_dirty arrow ]
 rprompt_segments = [ ]
 
@@ -29,8 +31,6 @@ timestamp_format = "%R"
 
 root_id = 0
 
-git-cmd = (external git)
-
 bold_prompt = $false
 
 fn -colored [what color]{
@@ -49,37 +49,19 @@ fn prompt_segment [style @texts]{
   -colored $text $style
 }
 
-# Return the git branch name of the current directory
-fn -git_branch_name {
-  out = ""
-  err = ?(out = ($git-cmd branch 2>/dev/null | eawk [line @f]{
-        if (eq $f[0] "*") {
-          if (and (> (count $f) 2) (eq $f[2] "detached")) {
-            replaces ')' '' $f[4]
-          } else {
-            echo $f[1]
-          }
-        }
-  }))
-  put $out
-}
-
-# Return whether the current git repo is "dirty" (modified in any way)
-fn -git_is_dirty {
-  out = []
-  err = ?(out = [($git-cmd ls-files --exclude-standard -om 2>/dev/null)])
-  > (count $out) 0
+fn -is-git-dirty {
+  or (> (git:dirty_count) 0) (> (git:staged_count) 0) (> (git:untracked_count) 0)
 }
 
 fn segment_git_branch {
-  branch = (-git_branch_name)
+  branch = (git:branch_name)
   if (not-eq $branch "") {
     prompt_segment $segment_style[git_branch] $glyph[git_branch] $branch
   }
 }
 
 fn segment_git_dirty {
-  if (-git_is_dirty) {
+  if (-is-git-dirty) {
     prompt_segment $segment_style[git_dirty] $glyph[git_dirty]
   }
 }
