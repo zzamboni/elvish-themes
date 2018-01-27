@@ -2,7 +2,8 @@
 
 This package contains Elvish themes I have developed. Install it using [[https://elvish.io/ref/epm.html][epm]]:
 
-#+begin_src elvish :tangle no
+#+begin_src elvish
+  use epm
   epm:install github.com/zzamboni/elvish-themes
 #+end_src
 
