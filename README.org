@@ -1,0 +1,16 @@
+* Elvish themes
+
+This package contains Elvish themes I have developed. Install it using [[https://elvish.io/ref/epm.html][epm]]:
+
+#+begin_src elvish :tangle no
+  epm:install github.com/zzamboni/elvish-themes
+#+end_src
+
+Currently the following themes are included:
+
+** chain
+
+Chain prompt theme, based on the fish theme at [[https://github.com/oh-my-fish/theme-chain][https://github.com/oh-my-fish/theme-chain]].
+
+See the install and use instructions in [[chain.org#use][chain.org]].
+
