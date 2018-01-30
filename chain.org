@@ -32,7 +32,7 @@ to explain. See [[file:chain.elv][chain.elv]] for the generated file.
   - [[#base-code-and-default-values][Base code and default values]]
   - [[#general-utility-functions][General utility functions]]
   - [[#built-in-segment-definitions][Built-in Segment Definitions]]
-    - [[#git_branch-and-git_dirty][=git_branch= and =git_dirty=]]
+    - [[#git-related-segments][git-related segments]]
     - [[#dir][=dir=]]
     - [[#su][=su=]]
     - [[#timestamp][=timestamp=]]
@@ -87,7 +87,7 @@ default values are:
 
 #+NAME: prompt_segment_defaults
 #+BEGIN_SRC elvish :tangle no
-  prompt_segments = [ su dir git_branch git_dirty arrow ]
+  prompt_segments = [ su dir git_branch git_dirty git_ahead git_behind git_staged git_untracked arrow ]
   rprompt_segments = [ ]
 #+END_SRC
 
@@ -129,11 +129,15 @@ chains.
 
 #+BEGIN_SRC elvish
   glyph = [
-    &prompt=     ">"
-    &git_branch= "⎇"
-    &git_dirty=  "±"
-    &su=         "⚡"
-    &chain=      "─"
+    &prompt=        ">"
+    &git_branch=    "⎇"
+    &git_dirty=     "±"
+    &git_ahead=     "⬆"
+    &git_behind=    "⬇"
+    &git_staged=    "✔"
+    &git_untracked= "+"
+    &su=            "⚡"
+    &chain=         "─"
   ]
 #+END_SRC
 
@@ -147,6 +151,10 @@ to [[https://elvish.io/ref/edit.html#editstyled][=edit:styled=]].
     &dir=        cyan
     &git_branch= blue
     &git_dirty=  yellow
+    &git_ahead=  "38;5;52"
+    &git_behind= "38;5;52"
+    &git_staged= "38;5;22"
+    &git_untracked= "38;5;52"
     &timestamp=  gray
   ]
 #+END_SRC
@@ -206,21 +214,31 @@ brackets.
 
 This is where the built-in segments are defined.
 
-*** =git_branch= and =git_dirty=
+*** git-related segments
 
-The =-is-git-dirty= function is simply a wrapper that returns =$true= if
-the current directory is unclean in any way: modified (dirty) files,
-untracked files, or staged but uncommitted files.
+Note that all the git-related segment functions only produce an output
+if the current directory contains a git repository.
+
+We define a few module-level variables which keep track of the latest
+git information. They get populated once-per-prompt by the =-parse_git=
+function, to avoid calling git multiple times during a single prompt
+generation.
 
 #+BEGIN_SRC elvish
-  fn -is-git-dirty {
-    > (+ (git:change_count)) 0
+  last_git_ahead = 0
+  last_git_behind = 0
+  last_git_dirty = 0
+  last_git_untracked = 0
+#+END_SRC
+
+#+BEGIN_SRC elvish
+  fn -parse_git {
+    last_git_ahead last_git_behind = (git:rev_count)
+    last_git_dirty last_git_untracked = (git:change_count)
   }
 #+END_SRC
 
-Based on this, we define the two segment functions. Please note
-that these functions only produce an output if the current directory
-contains a git repository.
+The =git_branch= segment indicates the current branch name.
 
 #+BEGIN_SRC elvish
   fn segment_git_branch {
@@ -229,13 +247,54 @@ contains a git repository.
       prompt_segment $segment_style[git_branch] $glyph[git_branch] $branch
     }
   }
+  #+END_SRC
+
+The =git_dirty= segment indicates whether any files are "dirty"
+(modified locally).
   
+  #+BEGIN_SRC elvish
   fn segment_git_dirty {
-    if (-is-git-dirty) {
+    if (> $last_git_dirty 0) {
       prompt_segment $segment_style[git_dirty] $glyph[git_dirty]
     }
   }
 #+END_SRC
+
+The =git_ahead= and =git_behind= segments indicate whether the current
+repository is ahead or behind of the upstream remote, if any.
+
+#+BEGIN_SRC elvish
+fn segment_git_ahead {
+	if (> $last_git_ahead 0) {
+		prompt_segment $segment_style[git_ahead] $glyph[git_ahead]
+	}
+}
+
+fn segment_git_behind {
+	if (> $last_git_behind 0) {
+		prompt_segment $segment_style[git_behind] $glyph[git_behind]
+	}
+}
+#+END_SRC
+
+The =git_staged= and =git_untracked= segments indicate whether there are
+staged-but-uncommited or untracked files, respectively.
+
+#+BEGIN_SRC elvish
+fn segment_git_staged {
+	changecount = (git:staged_count)
+	if (> $changecount 0) {
+		prompt_segment $segment_style[git_staged] $glyph[git_staged]
+	}
+}
+
+fn segment_git_untracked {
+	if (> $last_git_untracked 0) {
+		prompt_segment $segment_style[git_untracked] $glyph[git_untracked]
+	}
+}
+#+END_SRC
+
 
 *** =dir=
 
@@ -305,12 +364,16 @@ produces each one of them.
 #+BEGIN_SRC elvish
   # List of built-in segments
   segment = [
-    &su=         $segment_su~
-    &dir=        $segment_dir~
-    &git_branch= $segment_git_branch~
-    &git_dirty=  $segment_git_dirty~
-    &arrow=      $segment_arrow~
-    &timestamp=  $segment_timestamp~
+    &su=            $segment_su~
+    &dir=           $segment_dir~
+    &git_branch=    $segment_git_branch~
+    &git_dirty=     $segment_git_dirty~
+    &git_ahead=     $segment_git_ahead~
+    &git_behind=    $segment_git_behind~
+    &git_staged=    $segment_git_staged~
+    &git_untracked= $segment_git_untracked~
+    &arrow=         $segment_arrow~
+    &timestamp=     $segment_timestamp~
   ]
 #+END_SRC
 
@@ -349,6 +412,7 @@ chain, including the chain connectors.
   fn -build-chain [segments]{
     first = $true
     output = ""
+    -parse_git
     for seg $segments {
       time = (-time { output = [(-interpret-segment $seg)] })
       if (> (count $output) 0) {

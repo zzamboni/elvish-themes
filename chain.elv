@@ -7,15 +7,19 @@ use re
 
 use github.com/muesli/elvish-libs/git
 
-prompt_segments = [ su dir git_branch git_dirty arrow ]
+prompt_segments = [ su dir git_branch git_dirty git_ahead git_behind git_staged git_untracked arrow ]
 rprompt_segments = [ ]
 
 glyph = [
-  &prompt=     ">"
-  &git_branch= "⎇"
-  &git_dirty=  "±"
-  &su=         "⚡"
-  &chain=      "─"
+  &prompt=        ">"
+  &git_branch=    "⎇"
+  &git_dirty=     "±"
+  &git_ahead=     "⬆"
+  &git_behind=    "⬇"
+  &git_staged=    "✔"
+  &git_untracked= "+"
+  &su=            "⚡"
+  &chain=         "─"
 ]
 
 segment_style = [
@@ -24,6 +28,10 @@ segment_style = [
   &dir=        cyan
   &git_branch= blue
   &git_dirty=  yellow
+  &git_ahead=  "38;5;52"
+  &git_behind= "38;5;52"
+  &git_staged= "38;5;22"
+  &git_untracked= "38;5;52"
   &timestamp=  gray
 ]
 
@@ -51,8 +59,14 @@ fn prompt_segment [style @texts]{
   -colored $text $style
 }
 
-fn -is-git-dirty {
-  > (+ (git:change_count)) 0
+last_git_ahead = 0
+last_git_behind = 0
+last_git_dirty = 0
+last_git_untracked = 0
+
+fn -parse_git {
+  last_git_ahead last_git_behind = (git:rev_count)
+  last_git_dirty last_git_untracked = (git:change_count)
 }
 
 fn segment_git_branch {
@@ -63,9 +77,34 @@ fn segment_git_branch {
 }
 
 fn segment_git_dirty {
-  if (-is-git-dirty) {
+  if (> $last_git_dirty 0) {
     prompt_segment $segment_style[git_dirty] $glyph[git_dirty]
   }
+}
+
+fn segment_git_ahead {
+	if (> $last_git_ahead 0) {
+		prompt_segment $segment_style[git_ahead] $glyph[git_ahead]
+	}
+}
+
+fn segment_git_behind {
+	if (> $last_git_behind 0) {
+		prompt_segment $segment_style[git_behind] $glyph[git_behind]
+	}
+}
+
+fn segment_git_staged {
+	changecount = (git:staged_count)
+	if (> $changecount 0) {
+		prompt_segment $segment_style[git_staged] $glyph[git_staged]
+	}
+}
+
+fn segment_git_untracked {
+	if (> $last_git_untracked 0) {
+		prompt_segment $segment_style[git_untracked] $glyph[git_untracked]
+	}
 }
 
 fn -prompt_pwd {
@@ -98,12 +137,16 @@ fn segment_arrow {
 
 # List of built-in segments
 segment = [
-  &su=         $segment_su~
-  &dir=        $segment_dir~
-  &git_branch= $segment_git_branch~
-  &git_dirty=  $segment_git_dirty~
-  &arrow=      $segment_arrow~
-  &timestamp=  $segment_timestamp~
+  &su=            $segment_su~
+  &dir=           $segment_dir~
+  &git_branch=    $segment_git_branch~
+  &git_dirty=     $segment_git_dirty~
+  &git_ahead=     $segment_git_ahead~
+  &git_behind=    $segment_git_behind~
+  &git_staged=    $segment_git_staged~
+  &git_untracked= $segment_git_untracked~
+  &arrow=         $segment_arrow~
+  &timestamp=     $segment_timestamp~
 ]
 
 fn -interpret-segment [seg]{
@@ -128,6 +171,7 @@ fn -interpret-segment [seg]{
 fn -build-chain [segments]{
   first = $true
   output = ""
+  -parse_git
   for seg $segments {
     time = (-time { output = [(-interpret-segment $seg)] })
     if (> (count $output) 0) {
