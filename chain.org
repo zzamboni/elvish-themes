@@ -87,20 +87,22 @@ default values are:
 
 #+NAME: prompt_segment_defaults
 #+BEGIN_SRC elvish :tangle no
-  prompt_segments = [ su dir git_branch git_dirty git_ahead git_behind git_staged git_untracked arrow ]
+  prompt_segments = [ su dir git_branch git_combined arrow ]
   rprompt_segments = [ ]
 #+END_SRC
 
 Each element can be any of the following:
 
-- The name of one of the built-in segments. Available segments:
-  =arrow= =timestamp= =su= =dir= =git_branch= =git_dirty=
-- A string or the output of =edit:styled=, which will be displayed
+- The name of one of the built-in segments. Available segments: =arrow=,
+  =timestamp=, =su=, =dir=, =git_branch=, =git_dirty=, =git_untracked=, =git_ahead=,
+  =git_behind=, =git_staged=, =git_combined= (which combines in a single
+  segment all the other git status indicators)
+- A string or the output of [[https://elvish.io/ref/edit.html#editstyled][edit:styled]], which will be displayed
   as-is.
 - A lambda, which will be called and its output displayed
-- The output of a call to =theme:chain:segment <style> <strings>=,
-  which returns a "proper" segment, enclosed in square brackets and
-  styled as requested.
+- The output of a call to =chain:segment <style> <strings>=, which
+  returns a "proper" segment, enclosed in square brackets and styled
+  as requested.
 
 * Implementation
 
@@ -124,8 +126,13 @@ assigning to the appropriate variable):
 #+BEGIN_SRC elvish :noweb yes
   <<prompt_segment_defaults>>
 #+END_SRC
+
 Set up the default values for the glyphs used in the different
-chains.
+chains. Note that some of the Unicode glyphs may need an extra space
+after them so that the character does not run into the next one in the
+terminal. This is highly dependent on the font you use, so please fine
+tune as needed. The default values work fine for the [[http://levien.com/type/myfonts/inconsolata.html][Inconsolata]] font
+I use.
 
 #+BEGIN_SRC elvish
   glyph = [
@@ -185,10 +192,11 @@ Whether the prompt should be bold.
 
 ** General utility functions
 
-Internal function to return a styled string, or plain if =color == "default"=.
+Internal function to return a styled string, or plain if =color= is
+"default".
 
 #+BEGIN_SRC elvish
-  fn -colored [what color]{
+  fn -colorized [what color]{
     if (!=s $color default) {
       if $bold_prompt {
         color = $color";bold"
@@ -200,13 +208,22 @@ Internal function to return a styled string, or plain if =color == "default"=.
   }
 #+END_SRC
 
+The =-colorized-glyph= returns the glyph for the given segment, with its
+corresponding style.
+
+#+BEGIN_SRC elvish
+  fn -colorized-glyph [segment_name]{
+    -colorized $glyph[$segment_name] $segment_style[$segment_name]
+  }
+#+END_SRC
+
 Build a prompt segment in the given style, surrounded by square
 brackets.
 
 #+BEGIN_SRC elvish
   fn prompt_segment [style @texts]{
     text = "["(joins ' ' $texts)"]"
-    -colored $text $style
+    -colorized $text $style
   }
 #+END_SRC
 
@@ -229,12 +246,14 @@ generation.
   last_git_behind = 0
   last_git_dirty = 0
   last_git_untracked = 0
+  last_staged_count = 0
 #+END_SRC
 
 #+BEGIN_SRC elvish
   fn -parse_git {
     last_git_ahead last_git_behind = (git:rev_count)
     last_git_dirty last_git_untracked = (git:change_count)
+    last_staged_count = (git:staged_count)
   }
 #+END_SRC
 
@@ -282,8 +301,7 @@ staged-but-uncommited or untracked files, respectively.
 
 #+BEGIN_SRC elvish
 fn segment_git_staged {
-	changecount = (git:staged_count)
-	if (> $changecount 0) {
+	if (> $last_staged_count 0) {
 		prompt_segment $segment_style[git_staged] $glyph[git_staged]
 	}
 }
@@ -301,23 +319,24 @@ in a single segment.
 #+begin_src elvish
   fn segment_git_combined {
     indicators = []
+    if (> $last_git_untracked 0) {
+      indicators = [ $@indicators (-colorized-glyph git_untracked) ]
+    }
     if (> $last_git_dirty 0) {
-      indicators = [ $@indicators $segment_style[git_dirty] $glyph[git_dirty] ]
+      indicators = [ $@indicators (-colorized-glyph git_dirty) ]
+    }
+    if (> $last_staged_count 0) {
+      indicators = [ $@indicators (-colorized-glyph git_staged) ]
     }
     if (> $last_git_ahead 0) {
-      indicators = [ $@indicators $segment_style[git_ahead] $glyph[git_ahead] ]
+      indicators = [ $@indicators (-colorized-glyph git_ahead) ]
     }
     if (> $last_git_behind 0) {
-      indicators = [ $@indicators $segment_style[git_behind] $glyph[git_behind] ]
+      indicators = [ $@indicators (-colorized-glyph git_behind) ]
     }
-    changecount = (git:staged_count)
-    if (> $changecount 0) {
-      indicators = [ $@indicators $segment_style[git_staged] $glyph[git_staged] ]
-    }
-    if (> $last_git_untracked 0) {
-      indicators = [ $@indicators $segment_style[git_untracked] $glyph[git_untracked] ]
-    }
+    put '[' $@indicators ']'
   }
+
 #+end_src
 
 *** =dir=
@@ -376,7 +395,7 @@ cursor.
 
 #+BEGIN_SRC elvish
   fn segment_arrow {
-    -colored $glyph[prompt]" " green
+    -colorized $glyph[prompt]" " green
   }
 #+END_SRC
 
@@ -396,6 +415,7 @@ produces each one of them.
     &git_behind=    $segment_git_behind~
     &git_staged=    $segment_git_staged~
     &git_untracked= $segment_git_untracked~
+    &git_combined=  $segment_git_combined~
     &arrow=         $segment_arrow~
     &timestamp=     $segment_timestamp~
   ]
@@ -441,7 +461,7 @@ chain, including the chain connectors.
       time = (-time { output = [(-interpret-segment $seg)] })
       if (> (count $output) 0) {
         if (not $first) {
-          -colored $glyph[chain] $segment_style[chain]
+          -colorized $glyph[chain] $segment_style[chain]
         }
         put $@output
         first = $false

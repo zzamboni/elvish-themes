@@ -7,13 +7,13 @@ use re
 
 use github.com/muesli/elvish-libs/git
 
-prompt_segments = [ su dir git_branch git_dirty git_ahead git_behind git_staged git_untracked arrow ]
+prompt_segments = [ su dir git_branch git_combined arrow ]
 rprompt_segments = [ ]
 
 glyph = [
   &prompt=        ">"
   &git_branch=    "⎇"
-  &git_dirty=     "±"
+  &git_dirty=     "✎ "
   &git_ahead=     "⬆"
   &git_behind=    "⬇"
   &git_staged=    "✔"
@@ -43,7 +43,7 @@ root_id = 0
 
 bold_prompt = $false
 
-fn -colored [what color]{
+fn -colorized [what color]{
   if (!=s $color default) {
     if $bold_prompt {
       color = $color";bold"
@@ -54,19 +54,25 @@ fn -colored [what color]{
   }
 }
 
+fn -colorized-glyph [segment_name]{
+  -colorized $glyph[$segment_name] $segment_style[$segment_name]
+}
+
 fn prompt_segment [style @texts]{
   text = "["(joins ' ' $texts)"]"
-  -colored $text $style
+  -colorized $text $style
 }
 
 last_git_ahead = 0
 last_git_behind = 0
 last_git_dirty = 0
 last_git_untracked = 0
+last_staged_count = 0
 
 fn -parse_git {
   last_git_ahead last_git_behind = (git:rev_count)
   last_git_dirty last_git_untracked = (git:change_count)
+  last_staged_count = (git:staged_count)
 }
 
 fn segment_git_branch {
@@ -95,8 +101,7 @@ fn segment_git_behind {
 }
 
 fn segment_git_staged {
-	changecount = (git:staged_count)
-	if (> $changecount 0) {
+	if (> $last_staged_count 0) {
 		prompt_segment $segment_style[git_staged] $glyph[git_staged]
 	}
 }
@@ -105,6 +110,26 @@ fn segment_git_untracked {
 	if (> $last_git_untracked 0) {
 		prompt_segment $segment_style[git_untracked] $glyph[git_untracked]
 	}
+}
+
+fn segment_git_combined {
+  indicators = []
+  if (> $last_git_untracked 0) {
+    indicators = [ $@indicators (-colorized-glyph git_untracked) ]
+  }
+  if (> $last_git_dirty 0) {
+    indicators = [ $@indicators (-colorized-glyph git_dirty) ]
+  }
+  if (> $last_staged_count 0) {
+    indicators = [ $@indicators (-colorized-glyph git_staged) ]
+  }
+  if (> $last_git_ahead 0) {
+    indicators = [ $@indicators (-colorized-glyph git_ahead) ]
+  }
+  if (> $last_git_behind 0) {
+    indicators = [ $@indicators (-colorized-glyph git_behind) ]
+  }
+  put '[' $@indicators ']'
 }
 
 fn -prompt_pwd {
@@ -132,7 +157,7 @@ fn segment_timestamp {
 }
 
 fn segment_arrow {
-  -colored $glyph[prompt]" " green
+  -colorized $glyph[prompt]" " green
 }
 
 # List of built-in segments
@@ -145,6 +170,7 @@ segment = [
   &git_behind=    $segment_git_behind~
   &git_staged=    $segment_git_staged~
   &git_untracked= $segment_git_untracked~
+  &git_combined=  $segment_git_combined~
   &arrow=         $segment_arrow~
   &timestamp=     $segment_timestamp~
 ]
@@ -176,7 +202,7 @@ fn -build-chain [segments]{
     time = (-time { output = [(-interpret-segment $seg)] })
     if (> (count $output) 0) {
       if (not $first) {
-        -colored $glyph[chain] $segment_style[chain]
+        -colorized $glyph[chain] $segment_style[chain]
       }
       put $@output
       first = $false
