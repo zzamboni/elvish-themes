@@ -89,27 +89,27 @@ fn segment_git_dirty {
 }
 
 fn segment_git_ahead {
-	if (> $last_git_ahead 0) {
-		prompt_segment $segment_style[git_ahead] $glyph[git_ahead]
-	}
+  if (> $last_git_ahead 0) {
+    prompt_segment $segment_style[git_ahead] $glyph[git_ahead]
+  }
 }
 
 fn segment_git_behind {
-	if (> $last_git_behind 0) {
-		prompt_segment $segment_style[git_behind] $glyph[git_behind]
-	}
+  if (> $last_git_behind 0) {
+    prompt_segment $segment_style[git_behind] $glyph[git_behind]
+  }
 }
 
 fn segment_git_staged {
-	if (> $last_staged_count 0) {
-		prompt_segment $segment_style[git_staged] $glyph[git_staged]
-	}
+  if (> $last_staged_count 0) {
+    prompt_segment $segment_style[git_staged] $glyph[git_staged]
+  }
 }
 
 fn segment_git_untracked {
-	if (> $last_git_untracked 0) {
-		prompt_segment $segment_style[git_untracked] $glyph[git_untracked]
-	}
+  if (> $last_git_untracked 0) {
+    prompt_segment $segment_style[git_untracked] $glyph[git_untracked]
+  }
 }
 
 fn segment_git_combined {

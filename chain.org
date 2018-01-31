@@ -266,12 +266,12 @@ The =git_branch= segment indicates the current branch name.
       prompt_segment $segment_style[git_branch] $glyph[git_branch] $branch
     }
   }
-  #+END_SRC
+#+END_SRC
 
 The =git_dirty= segment indicates whether any files are "dirty"
 (modified locally).
   
-  #+BEGIN_SRC elvish
+#+BEGIN_SRC elvish
   fn segment_git_dirty {
     if (> $last_git_dirty 0) {
       prompt_segment $segment_style[git_dirty] $glyph[git_dirty]
@@ -283,34 +283,34 @@ The =git_ahead= and =git_behind= segments indicate whether the current
 repository is ahead or behind of the upstream remote, if any.
 
 #+BEGIN_SRC elvish
-fn segment_git_ahead {
-	if (> $last_git_ahead 0) {
-		prompt_segment $segment_style[git_ahead] $glyph[git_ahead]
-	}
-}
+  fn segment_git_ahead {
+    if (> $last_git_ahead 0) {
+      prompt_segment $segment_style[git_ahead] $glyph[git_ahead]
+    }
+  }
 
-fn segment_git_behind {
-	if (> $last_git_behind 0) {
-		prompt_segment $segment_style[git_behind] $glyph[git_behind]
-	}
-}
+  fn segment_git_behind {
+    if (> $last_git_behind 0) {
+      prompt_segment $segment_style[git_behind] $glyph[git_behind]
+    }
+  }
 #+END_SRC
 
 The =git_staged= and =git_untracked= segments indicate whether there are
 staged-but-uncommited or untracked files, respectively.
 
 #+BEGIN_SRC elvish
-fn segment_git_staged {
-	if (> $last_staged_count 0) {
-		prompt_segment $segment_style[git_staged] $glyph[git_staged]
-	}
-}
+  fn segment_git_staged {
+    if (> $last_staged_count 0) {
+      prompt_segment $segment_style[git_staged] $glyph[git_staged]
+    }
+  }
 
-fn segment_git_untracked {
-	if (> $last_git_untracked 0) {
-		prompt_segment $segment_style[git_untracked] $glyph[git_untracked]
-	}
-}
+  fn segment_git_untracked {
+    if (> $last_git_untracked 0) {
+      prompt_segment $segment_style[git_untracked] $glyph[git_untracked]
+    }
+  }
 #+END_SRC
 
 The =git_combined= segment combines all the different status indicators
@@ -480,7 +480,7 @@ prompts, respectively. These are basically wrappers around
   fn prompt [@skipcheck]{
     put (-build-chain $prompt_segments)
   }
-  
+
   fn rprompt [@skipcheck]{
     put (-build-chain $rprompt_segments)
   }
