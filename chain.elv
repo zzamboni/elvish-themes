@@ -129,7 +129,9 @@ fn segment_git_combined {
   if (> $last_git_behind 0) {
     indicators = [ $@indicators (-colorized-glyph git_behind) ]
   }
-  put '[' $@indicators ']'
+  if (> (count $indicators) 0) {
+    put '[' $@indicators ']'
+  }
 }
 
 fn -prompt_pwd {
