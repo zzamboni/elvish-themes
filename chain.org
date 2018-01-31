@@ -131,7 +131,7 @@ chains.
   glyph = [
     &prompt=        ">"
     &git_branch=    "⎇"
-    &git_dirty=     "±"
+    &git_dirty=     "✎ "
     &git_ahead=     "⬆"
     &git_behind=    "⬇"
     &git_staged=    "✔"
@@ -295,6 +295,30 @@ fn segment_git_untracked {
 }
 #+END_SRC
 
+The =git_combined= segment combines all the different status indicators
+in a single segment.
+
+#+begin_src elvish
+  fn segment_git_combined {
+    indicators = []
+    if (> $last_git_dirty 0) {
+      indicators = [ $@indicators $segment_style[git_dirty] $glyph[git_dirty] ]
+    }
+    if (> $last_git_ahead 0) {
+      indicators = [ $@indicators $segment_style[git_ahead] $glyph[git_ahead] ]
+    }
+    if (> $last_git_behind 0) {
+      indicators = [ $@indicators $segment_style[git_behind] $glyph[git_behind] ]
+    }
+    changecount = (git:staged_count)
+    if (> $changecount 0) {
+      indicators = [ $@indicators $segment_style[git_staged] $glyph[git_staged] ]
+    }
+    if (> $last_git_untracked 0) {
+      indicators = [ $@indicators $segment_style[git_untracked] $glyph[git_untracked] ]
+    }
+  }
+#+end_src
 
 *** =dir=
 
