@@ -13,5 +13,4 @@ Currently the following themes are included:
 
 Chain prompt theme, based on the fish theme at [[https://github.com/oh-my-fish/theme-chain][https://github.com/oh-my-fish/theme-chain]].
 
-See the install and use instructions in [[chain.org#use][chain.org]].
-
+See the install and use instructions in [[file:chain.org][chain.org]].
