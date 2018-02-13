@@ -57,11 +57,10 @@ printed every time the shell starts, you can add the
 =&silent-if-installed=$true= option to the above command.
 
 Add the following to you =~/.elvish/rc.elv= file to load and configure
-the theme
+the theme:
 
 #+BEGIN_SRC elvish :tangle no
   use github.com/zzamboni/elvish-themes/chain
-  chain:setup
 #+END_SRC
 
 If you want the prompt to be shown using bold fonts, set the
@@ -488,7 +487,7 @@ prompts, respectively. These are basically wrappers around
 
 ** Initialization
 
-Default setup, assigning our functions to =edit:prompt= and
+Default setup function, assigning our functions to =edit:prompt= and
 =edit:rprompt=
 
 #+BEGIN_SRC elvish
