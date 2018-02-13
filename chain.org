@@ -39,7 +39,7 @@ to explain. See [[file:chain.elv][chain.elv]] for the generated file.
     - [[#arrow][=arrow=]]
   - [[#default-segment-declarations][Default segment declarations]]
   - [[#chain--and-prompt-building-functions][Chain- and prompt-building functions]]
-  - [[#setup][Setup]]
+  - [[#initialization][Initialization]]
 
 * Use
 
@@ -270,7 +270,7 @@ The =git_branch= segment indicates the current branch name.
 
 The =git_dirty= segment indicates whether any files are "dirty"
 (modified locally).
-  
+
 #+BEGIN_SRC elvish
   fn segment_git_dirty {
     if (> $last_git_dirty 0) {
@@ -486,14 +486,20 @@ prompts, respectively. These are basically wrappers around
   }
 #+END_SRC
 
-** Setup
+** Initialization
 
 Default setup, assigning our functions to =edit:prompt= and
 =edit:rprompt=
 
 #+BEGIN_SRC elvish
-  fn setup {
+  fn init {
     edit:prompt = $prompt~
     edit:rprompt = $rprompt~
   }
 #+END_SRC
+
+We call the =init= function automatically on module load.
+
+#+begin_src elvish
+  init
+#+end_src

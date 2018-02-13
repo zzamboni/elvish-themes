@@ -220,7 +220,9 @@ fn rprompt [@skipcheck]{
   put (-build-chain $rprompt_segments)
 }
 
-fn setup {
+fn init {
   edit:prompt = $prompt~
   edit:rprompt = $rprompt~
 }
+
+init
