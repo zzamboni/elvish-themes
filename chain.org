@@ -67,7 +67,7 @@ If you want the prompt to be shown using bold fonts, set the
 following:
 
 #+begin_src elvish :tangle no
-  chain:bold_prompt = $true
+  chain:bold-prompt = $true
 #+end_src
 
 You should use the =$edit:-prompts-max-wait= variable to automatically
@@ -79,22 +79,22 @@ segments, which can produce slowdowns in large repositories:
 #+end_src
 
 The chains on both sides can be configured by assigning to
-=theme:chain:prompt_segments= and =theme:chain:rprompt_segments=,
+=theme:chain:prompt-segments= and =theme:chain:rprompt-segments=,
 respectively. These variables must be arrays, and the given segments
 will be automatically linked by =$theme:chain:glyph[chain]=. Their
 default values are:
 
-#+name: prompt_segment_defaults
+#+name: prompt-segment-defaults
 #+begin_src elvish :tangle no
-  prompt_segments = [ su dir git_branch git_combined arrow ]
-  rprompt_segments = [ ]
+  prompt-segments = [ su dir git-branch git-combined arrow ]
+  rprompt-segments = [ ]
 #+end_src
 
 Each element can be any of the following:
 
 - The name of one of the built-in segments. Available segments: =arrow=,
-  =timestamp=, =su=, =dir=, =git_branch=, =git_dirty=, =git_untracked=, =git_ahead=,
-  =git_behind=, =git_staged=, =git_combined= (which combines in a single
+  =timestamp=, =su=, =dir=, =git-branch=, =git-dirty=, =git-untracked=, =git-ahead=,
+  =git-behind=, =git-staged=, =git-combined= (which combines in a single
   segment all the other git status indicators)
 - A string or the output of [[https://elvish.io/ref/edit.html#editstyled][edit:styled]], which will be displayed
   as-is.
@@ -123,7 +123,7 @@ Set up the default values for the chains (all can be configured by
 assigning to the appropriate variable):
 
 #+begin_src elvish :noweb yes
-  <<prompt_segment_defaults>>
+  <<prompt-segment-defaults>>
 #+end_src
 
 Set up the default values for the glyphs used in the different
@@ -136,12 +136,12 @@ I use.
 #+begin_src elvish
   glyph = [
     &prompt=        ">"
-    &git_branch=    "⎇"
-    &git_dirty=     "✎ "
-    &git_ahead=     "⬆"
-    &git_behind=    "⬇"
-    &git_staged=    "✔"
-    &git_untracked= "+"
+    &git-branch=    "⎇"
+    &git-dirty=     "✎ "
+    &git-ahead=     "⬆"
+    &git-behind=    "⬇"
+    &git-staged=    "✔"
+    &git-untracked= "+"
     &su=            "⚡"
     &chain=         "─"
   ]
@@ -151,16 +151,16 @@ Styling for each built-in segment. The value must be a valid argument
 to [[https://elvish.io/ref/edit.html#editstyled][=edit:styled=]].
 
 #+begin_src elvish
-  segment_style = [
+  segment-style = [
     &chain=      default
     &su=         yellow
     &dir=        cyan
-    &git_branch= blue
-    &git_dirty=  yellow
-    &git_ahead=  "38;5;52"
-    &git_behind= "38;5;52"
-    &git_staged= "38;5;22"
-    &git_untracked= "38;5;52"
+    &git-branch= blue
+    &git-dirty=  yellow
+    &git-ahead=  "38;5;52"
+    &git-behind= "38;5;52"
+    &git-staged= "38;5;22"
+    &git-untracked= "38;5;52"
     &timestamp=  gray
   ]
 #+end_src
@@ -168,25 +168,25 @@ to [[https://elvish.io/ref/edit.html#editstyled][=edit:styled=]].
 To how many letters to abbreviate directories in the path - ~0~ to show in full.
 
 #+begin_src elvish
-  prompt_pwd_dir_length = 1
+  prompt-pwd-dir-length = 1
 #+end_src
 
 Format to use for the 'timestamp' segment, in [[http://man7.org/linux/man-pages/man3/strftime.3.html][strftime(3)]] format.
 
 #+begin_src elvish
-  timestamp_format = "%R"
+  timestamp-format = "%R"
 #+end_src
 
 User ID that will trigger the "su" segment. Defaults to root.
 
 #+begin_src elvish
-  root_id = 0
+  root-id = 0
 #+end_src
 
 Whether the prompt should be bold.
 
 #+begin_src elvish
-  bold_prompt = $false
+  bold-prompt = $false
 #+end_src
 
 ** General utility functions
@@ -197,7 +197,7 @@ Internal function to return a styled string, or plain if =color= is
 #+begin_src elvish
   fn -colorized [what color]{
     if (!=s $color default) {
-      if $bold_prompt {
+      if $bold-prompt {
         color = $color";bold"
       }
       edit:styled $what $color
@@ -211,8 +211,8 @@ The =-colorized-glyph= returns the glyph for the given segment, with its
 corresponding style.
 
 #+begin_src elvish
-  fn -colorized-glyph [segment_name]{
-    -colorized $glyph[$segment_name] $segment_style[$segment_name]
+  fn -colorized-glyph [segment-name]{
+    -colorized $glyph[$segment-name] $segment-style[$segment-name]
   }
 #+end_src
 
@@ -220,7 +220,7 @@ Build a prompt segment in the given style, surrounded by square
 brackets.
 
 #+begin_src elvish
-  fn prompt_segment [style @texts]{
+  fn prompt-segment [style @texts]{
     text = "["(joins ' ' $texts)"]"
     -colorized $text $style
   }
@@ -236,102 +236,102 @@ Note that all the git-related segment functions only produce an output
 if the current directory contains a git repository.
 
 We define a few module-level variables which keep track of the latest
-git information. They get populated once-per-prompt by the =-parse_git=
+git information. They get populated once-per-prompt by the =-parse-git=
 function, to avoid calling git multiple times during a single prompt
 generation.
 
 #+begin_src elvish
-  last_git_ahead = 0
-  last_git_behind = 0
-  last_git_dirty = 0
-  last_git_untracked = 0
-  last_staged_count = 0
+  last-git-ahead = 0
+  last-git-behind = 0
+  last-git-dirty = 0
+  last-git-untracked = 0
+  last-staged-count = 0
 #+end_src
 
 #+begin_src elvish
-  fn -parse_git {
-    last_git_ahead last_git_behind = (git:rev_count)
-    last_git_dirty last_git_untracked = (git:change_count)
-    last_staged_count = (git:staged_count)
+  fn -parse-git {
+    last-git-ahead last-git-behind = (git:rev_count)
+    last-git-dirty last-git-untracked = (git:change_count)
+    last-staged-count = (git:staged_count)
   }
 #+end_src
 
-The =git_branch= segment indicates the current branch name.
+The =git-branch= segment indicates the current branch name.
 
 #+begin_src elvish
-  fn segment_git_branch {
+  fn segment-git-branch {
     branch = (git:branch_name)
     if (not-eq $branch "") {
-      prompt_segment $segment_style[git_branch] $glyph[git_branch] $branch
+      prompt-segment $segment-style[git-branch] $glyph[git-branch] $branch
     }
   }
 #+end_src
 
-The =git_dirty= segment indicates whether any files are "dirty"
+The =git-dirty= segment indicates whether any files are "dirty"
 (modified locally).
 
 #+begin_src elvish
-  fn segment_git_dirty {
-    if (> $last_git_dirty 0) {
-      prompt_segment $segment_style[git_dirty] $glyph[git_dirty]
+  fn segment-git-dirty {
+    if (> $last-git-dirty 0) {
+      prompt-segment $segment-style[git-dirty] $glyph[git-dirty]
     }
   }
 #+end_src
 
-The =git_ahead= and =git_behind= segments indicate whether the current
+The =git-ahead= and =git-behind= segments indicate whether the current
 repository is ahead or behind of the upstream remote, if any.
 
 #+begin_src elvish
-  fn segment_git_ahead {
-    if (> $last_git_ahead 0) {
-      prompt_segment $segment_style[git_ahead] $glyph[git_ahead]
+  fn segment-git-ahead {
+    if (> $last-git-ahead 0) {
+      prompt-segment $segment-style[git-ahead] $glyph[git-ahead]
     }
   }
 
-  fn segment_git_behind {
-    if (> $last_git_behind 0) {
-      prompt_segment $segment_style[git_behind] $glyph[git_behind]
+  fn segment-git-behind {
+    if (> $last-git-behind 0) {
+      prompt-segment $segment-style[git-behind] $glyph[git-behind]
     }
   }
 #+end_src
 
-The =git_staged= and =git_untracked= segments indicate whether there are
+The =git-staged= and =git-untracked= segments indicate whether there are
 staged-but-uncommited or untracked files, respectively.
 
 #+begin_src elvish
-  fn segment_git_staged {
-    if (> $last_staged_count 0) {
-      prompt_segment $segment_style[git_staged] $glyph[git_staged]
+  fn segment-git-staged {
+    if (> $last-staged-count 0) {
+      prompt-segment $segment-style[git-staged] $glyph[git-staged]
     }
   }
 
-  fn segment_git_untracked {
-    if (> $last_git_untracked 0) {
-      prompt_segment $segment_style[git_untracked] $glyph[git_untracked]
+  fn segment-git-untracked {
+    if (> $last-git-untracked 0) {
+      prompt-segment $segment-style[git-untracked] $glyph[git-untracked]
     }
   }
 #+end_src
 
-The =git_combined= segment combines all the different status indicators
+The =git-combined= segment combines all the different status indicators
 in a single segment.
 
 #+begin_src elvish
-  fn segment_git_combined {
+  fn segment-git-combined {
     indicators = []
-    if (> $last_git_untracked 0) {
-      indicators = [ $@indicators (-colorized-glyph git_untracked) ]
+    if (> $last-git-untracked 0) {
+      indicators = [ $@indicators (-colorized-glyph git-untracked) ]
     }
-    if (> $last_git_dirty 0) {
-      indicators = [ $@indicators (-colorized-glyph git_dirty) ]
+    if (> $last-git-dirty 0) {
+      indicators = [ $@indicators (-colorized-glyph git-dirty) ]
     }
-    if (> $last_staged_count 0) {
-      indicators = [ $@indicators (-colorized-glyph git_staged) ]
+    if (> $last-staged-count 0) {
+      indicators = [ $@indicators (-colorized-glyph git-staged) ]
     }
-    if (> $last_git_ahead 0) {
-      indicators = [ $@indicators (-colorized-glyph git_ahead) ]
+    if (> $last-git-ahead 0) {
+      indicators = [ $@indicators (-colorized-glyph git-ahead) ]
     }
-    if (> $last_git_behind 0) {
-      indicators = [ $@indicators (-colorized-glyph git_behind) ]
+    if (> $last-git-behind 0) {
+      indicators = [ $@indicators (-colorized-glyph git-behind) ]
     }
     if (> (count $indicators) 0) {
       put '[' $@indicators ']'
@@ -343,22 +343,22 @@ in a single segment.
 
 For this segment we also need a support function, which returns
 the current path with each directory name shortened to a maximum
-of =$prompt_pwd_dir_length= characters.
+of =$prompt-pwd-dir-length= characters.
 
 #+begin_src elvish
-  fn -prompt_pwd {
+  fn -prompt-pwd {
     tmp = (tilde-abbr $pwd)
-    if (== $prompt_pwd_dir_length 0) {
+    if (== $prompt-pwd-dir-length 0) {
       put $tmp
     } else {
-      re:replace '(\.?[^/]{'$prompt_pwd_dir_length'})[^/]*/' '$1/' $tmp
+      re:replace '(\.?[^/]{'$prompt-pwd-dir-length'})[^/]*/' '$1/' $tmp
     }
   }
 #+end_src
 
 #+begin_src elvish
-  fn segment_dir {
-    prompt_segment $segment_style[dir] (-prompt_pwd)
+  fn segment-dir {
+    prompt-segment $segment-style[dir] (-prompt-pwd)
   }
 #+end_src
 
@@ -366,13 +366,13 @@ of =$prompt_pwd_dir_length= characters.
 
 This segment outputs a glyph if the current user has a privileged
 ID (=root= by default, with ID 0, but can be configured by
-changing =$root_id=).
+changing =$root-id=).
 
 #+begin_src elvish
-  fn segment_su {
+  fn segment-su {
     uid = (id -u)
-    if (eq $uid $root_id) {
-      prompt_segment $segment_style[su] $glyph[su]
+    if (eq $uid $root-id) {
+      prompt-segment $segment-style[su] $glyph[su]
     }
   }
 #+end_src
@@ -380,11 +380,11 @@ changing =$root_id=).
 *** =timestamp=
 
 This segment simply outputs the current date according to the
-format defined in =$timestamp_format=.
+format defined in =$timestamp-format=.
 
 #+begin_src elvish
-  fn segment_timestamp {
-    prompt_segment $segment_style[timestamp] (date +$timestamp_format)
+  fn segment-timestamp {
+    prompt-segment $segment-style[timestamp] (date +$timestamp-format)
   }
 #+end_src
 
@@ -394,7 +394,7 @@ This segment prints the separator between the other chains and the
 cursor.
 
 #+begin_src elvish
-  fn segment_arrow {
+  fn segment-arrow {
     -colorized $glyph[prompt]" " green
   }
 #+end_src
@@ -407,17 +407,17 @@ produces each one of them.
 #+begin_src elvish
   # List of built-in segments
   segment = [
-    &su=            $segment_su~
-    &dir=           $segment_dir~
-    &git_branch=    $segment_git_branch~
-    &git_dirty=     $segment_git_dirty~
-    &git_ahead=     $segment_git_ahead~
-    &git_behind=    $segment_git_behind~
-    &git_staged=    $segment_git_staged~
-    &git_untracked= $segment_git_untracked~
-    &git_combined=  $segment_git_combined~
-    &arrow=         $segment_arrow~
-    &timestamp=     $segment_timestamp~
+    &su=            $segment-su~
+    &dir=           $segment-dir~
+    &git-branch=    $segment-git-branch~
+    &git-dirty=     $segment-git-dirty~
+    &git-ahead=     $segment-git-ahead~
+    &git-behind=    $segment-git-behind~
+    &git-staged=    $segment-git-staged~
+    &git-untracked= $segment-git-untracked~
+    &git-combined=  $segment-git-combined~
+    &arrow=         $segment-arrow~
+    &timestamp=     $segment-timestamp~
   ]
 #+end_src
 
@@ -456,12 +456,12 @@ chain, including the chain connectors.
   fn -build-chain [segments]{
     first = $true
     output = ""
-    -parse_git
+    -parse-git
     for seg $segments {
       time = (-time { output = [(-interpret-segment $seg)] })
       if (> (count $output) 0) {
         if (not $first) {
-          -colorized $glyph[chain] $segment_style[chain]
+          -colorized $glyph[chain] $segment-style[chain]
         }
         put $@output
         first = $false
@@ -476,11 +476,11 @@ prompts, respectively. These are basically wrappers around
 
 #+begin_src elvish
   fn prompt [@skipcheck]{
-    put (-build-chain $prompt_segments)
+    put (-build-chain $prompt-segments)
   }
 
   fn rprompt [@skipcheck]{
-    put (-build-chain $rprompt_segments)
+    put (-build-chain $rprompt-segments)
   }
 #+end_src
 
