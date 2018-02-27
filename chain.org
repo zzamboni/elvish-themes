@@ -103,6 +103,10 @@ Each element can be any of the following:
   returns a "proper" segment, enclosed in square brackets and styled
   as requested.
 
+You can customize the glyphs and styles used for the different
+segments by assigning to the corresponding elements of =chain:glyph= and
+=chain:segment-style=, respectively.
+
 * Implementation
 
 ** Base code and default values
@@ -135,7 +139,6 @@ I use.
 
 #+begin_src elvish
   glyph = [
-    &prompt=        ">"
     &git-branch=    "⎇"
     &git-dirty=     "✎ "
     &git-ahead=     "⬆"
@@ -144,6 +147,7 @@ I use.
     &git-untracked= "+"
     &su=            "⚡"
     &chain=         "─"
+    &arrow=         ">"
   ]
 #+end_src
 
@@ -152,16 +156,17 @@ to [[https://elvish.io/ref/edit.html#editstyled][=edit:styled=]].
 
 #+begin_src elvish
   segment-style = [
-    &chain=      default
-    &su=         yellow
-    &dir=        cyan
-    &git-branch= blue
-    &git-dirty=  yellow
-    &git-ahead=  "38;5;52"
-    &git-behind= "38;5;52"
-    &git-staged= "38;5;22"
+    &chain=         default
+    &su=            yellow
+    &dir=           cyan
+    &git-branch=    blue
+    &git-dirty=     yellow
+    &git-ahead=     "38;5;52"
+    &git-behind=    "38;5;52"
+    &git-staged=    "38;5;22"
     &git-untracked= "38;5;52"
-    &timestamp=  gray
+    &timestamp=     gray
+    &arrow=         green
   ]
 #+end_src
 
@@ -395,7 +400,7 @@ cursor.
 
 #+begin_src elvish
   fn segment-arrow {
-    -colorized $glyph[prompt]" " green
+    -colorized $glyph[arrow]" " $segment-style[arrow]
   }
 #+end_src
 

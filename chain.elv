@@ -11,7 +11,6 @@ prompt-segments = [ su dir git-branch git-combined arrow ]
 rprompt-segments = [ ]
 
 glyph = [
-  &prompt=        ">"
   &git-branch=    "⎇"
   &git-dirty=     "✎ "
   &git-ahead=     "⬆"
@@ -20,19 +19,21 @@ glyph = [
   &git-untracked= "+"
   &su=            "⚡"
   &chain=         "─"
+  &arrow=         ">"
 ]
 
 segment-style = [
-  &chain=      default
-  &su=         yellow
-  &dir=        cyan
-  &git-branch= blue
-  &git-dirty=  yellow
-  &git-ahead=  "38;5;52"
-  &git-behind= "38;5;52"
-  &git-staged= "38;5;22"
+  &chain=         default
+  &su=            yellow
+  &dir=           cyan
+  &git-branch=    blue
+  &git-dirty=     yellow
+  &git-ahead=     "38;5;52"
+  &git-behind=    "38;5;52"
+  &git-staged=    "38;5;22"
   &git-untracked= "38;5;52"
-  &timestamp=  gray
+  &timestamp=     gray
+  &arrow=         green
 ]
 
 prompt-pwd-dir-length = 1
@@ -159,7 +160,7 @@ fn segment-timestamp {
 }
 
 fn segment-arrow {
-  -colorized $glyph[prompt]" " green
+  -colorized $glyph[arrow]" " $segment-style[arrow]
 }
 
 # List of built-in segments
