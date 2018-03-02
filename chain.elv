@@ -17,6 +17,7 @@ glyph = [
   &git-behind=    "⬇"
   &git-staged=    "✔"
   &git-untracked= "+"
+  &git-deleted=   "-"
   &su=            "⚡"
   &chain=         "─"
   &arrow=         ">"
@@ -32,6 +33,7 @@ segment-style = [
   &git-behind=    "38;5;52"
   &git-staged=    "38;5;22"
   &git-untracked= "38;5;52"
+  &git-deleted=   "38;5;52"
   &timestamp=     gray
   &arrow=         green
 ]
@@ -68,11 +70,12 @@ last-git-ahead = 0
 last-git-behind = 0
 last-git-dirty = 0
 last-git-untracked = 0
+last-git-deleted = 0
 last-staged-count = 0
 
 fn -parse-git {
   last-git-ahead last-git-behind = (git:rev_count)
-  last-git-dirty last-git-untracked = (git:change_count)
+  last-git-dirty last-git-untracked last-git-deleted = (git:change_count)
   last-staged-count = (git:staged_count)
 }
 
@@ -113,10 +116,19 @@ fn segment-git-untracked {
   }
 }
 
+fn segment-git-deleted {
+  if (> $last-git-deleted 0) {
+    prompt-segment $segment-style[git-deleted] $glyph[git-deleted]
+  }
+}
+
 fn segment-git-combined {
   indicators = []
   if (> $last-git-untracked 0) {
     indicators = [ $@indicators (-colorized-glyph git-untracked) ]
+  }
+  if (> $last-git-deleted 0) {
+    indicators = [ $@indicators (-colorized-glyph git-deleted) ]
   }
   if (> $last-git-dirty 0) {
     indicators = [ $@indicators (-colorized-glyph git-dirty) ]
@@ -173,6 +185,7 @@ segment = [
   &git-behind=    $segment-git-behind~
   &git-staged=    $segment-git-staged~
   &git-untracked= $segment-git-untracked~
+  &git-deleted=   $segment-git-deleted~
   &git-combined=  $segment-git-combined~
   &arrow=         $segment-arrow~
   &timestamp=     $segment-timestamp~
