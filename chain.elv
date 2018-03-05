@@ -226,11 +226,11 @@ fn -build-chain [segments]{
   }
 }
 
-fn prompt [@skipcheck]{
+fn prompt {
   put (-build-chain $prompt-segments)
 }
 
-fn rprompt [@skipcheck]{
+fn rprompt {
   put (-build-chain $rprompt-segments)
 }
 
