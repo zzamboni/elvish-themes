@@ -66,80 +66,79 @@ fn prompt-segment [style @texts]{
   -colorized $text $style
 }
 
-last-git-ahead = 0
-last-git-behind = 0
-last-git-dirty = 0
-last-git-untracked = 0
-last-git-deleted = 0
-last-staged-count = 0
+last-status = [&]
 
 fn -parse-git {
-  last-git-ahead last-git-behind = (git:rev_count)
-  last-git-dirty last-git-untracked last-git-deleted = (git:change_count)
-  last-staged-count = (git:staged_count)
+  last-status = (git:status)
 }
 
 fn segment-git-branch {
-  branch = (git:branch_name)
+  branch = $last-status[branch-name]
   if (not-eq $branch "") {
+    if (eq $branch '(detached)') {
+      branch = $last-status[branch-oid][0:7]
+    }
     prompt-segment $segment-style[git-branch] $glyph[git-branch] $branch
   }
 }
 
 fn segment-git-dirty {
-  if (> $last-git-dirty 0) {
+  if (> $last-status[local-modified] 0) {
     prompt-segment $segment-style[git-dirty] $glyph[git-dirty]
   }
 }
 
 fn segment-git-ahead {
-  if (> $last-git-ahead 0) {
+  if (> $last-status[rev-ahead] 0) {
     prompt-segment $segment-style[git-ahead] $glyph[git-ahead]
   }
 }
 
 fn segment-git-behind {
-  if (> $last-git-behind 0) {
+  if (> $last-status[rev-behind] 0) {
     prompt-segment $segment-style[git-behind] $glyph[git-behind]
   }
 }
 
 fn segment-git-staged {
-  if (> $last-staged-count 0) {
+  total-staged = (+ $last-status[staged-modified-count staged-deleted-count staged-added-count renamed-count copied-count])
+  if (> $total-staged 0) {
     prompt-segment $segment-style[git-staged] $glyph[git-staged]
   }
 }
 
 fn segment-git-untracked {
-  if (> $last-git-untracked 0) {
+  if (> $last-status[untracked-count] 0) {
     prompt-segment $segment-style[git-untracked] $glyph[git-untracked]
   }
 }
 
 fn segment-git-deleted {
-  if (> $last-git-deleted 0) {
+  if (> $last-status[local-deleted-count] 0) {
     prompt-segment $segment-style[git-deleted] $glyph[git-deleted]
   }
 }
 
 fn segment-git-combined {
   indicators = []
-  if (> $last-git-untracked 0) {
+  total-staged = (+ $last-status[staged-modified-count staged-deleted-count staged-added-count renamed-count copied-count])
+
+  if (> $last-status[untracked-count] 0) {
     indicators = [ $@indicators (-colorized-glyph git-untracked) ]
   }
-  if (> $last-git-deleted 0) {
+  if (> $last-status[local-deleted-count] 0) {
     indicators = [ $@indicators (-colorized-glyph git-deleted) ]
   }
-  if (> $last-git-dirty 0) {
+  if (> $last-status[local-modified-count] 0) {
     indicators = [ $@indicators (-colorized-glyph git-dirty) ]
   }
-  if (> $last-staged-count 0) {
+  if (> $total-staged 0) {
     indicators = [ $@indicators (-colorized-glyph git-staged) ]
   }
-  if (> $last-git-ahead 0) {
+  if (> $last-status[rev-ahead] 0) {
     indicators = [ $@indicators (-colorized-glyph git-ahead) ]
   }
-  if (> $last-git-behind 0) {
+  if (> $last-status[rev-behind] 0) {
     indicators = [ $@indicators (-colorized-glyph git-behind) ]
   }
   if (> (count $indicators) 0) {
