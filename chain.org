@@ -304,21 +304,31 @@ whether there are staged-but-uncommited, untracked or
 deleted-but-still-tracked files, respectively.
 
 #+begin_src elvish
+  fn -any-staged {
+    each [k]{
+      if (not-eq $last-status[$k] []) {
+        any-staged = $true
+        put $true
+        return
+      }
+    } [staged-modified staged-deleted staged-added renamed copied]
+    put $false
+  }
+
   fn segment-git-staged {
-    total-staged = (+ $last-status[staged-modified-count staged-deleted-count staged-added-count renamed-count copied-count])
-    if (> $total-staged 0) {
+    if (-any-staged) {
       prompt-segment $segment-style[git-staged] $glyph[git-staged]
     }
   }
 
   fn segment-git-untracked {
-    if (> $last-status[untracked-count] 0) {
+    if (not-eq $last-status[untracked] []) {
       prompt-segment $segment-style[git-untracked] $glyph[git-untracked]
     }
   }
 
   fn segment-git-deleted {
-    if (> $last-status[local-deleted-count] 0) {
+    if (not-eq $last-status[local-deleted] []) {
       prompt-segment $segment-style[git-deleted] $glyph[git-deleted]
     }
   }
@@ -330,18 +340,17 @@ in a single segment.
 #+begin_src elvish
   fn segment-git-combined {
     indicators = []
-    total-staged = (+ $last-status[staged-modified-count staged-deleted-count staged-added-count renamed-count copied-count])
 
-    if (> $last-status[untracked-count] 0) {
+    if (not-eq $last-status[untracked] []) {
       indicators = [ $@indicators (-colorized-glyph git-untracked) ]
     }
-    if (> $last-status[local-deleted-count] 0) {
+    if (not-eq $last-status[local-deleted] []) {
       indicators = [ $@indicators (-colorized-glyph git-deleted) ]
     }
-    if (> $last-status[local-modified-count] 0) {
+    if (not-eq $last-status[local-modified] []) {
       indicators = [ $@indicators (-colorized-glyph git-dirty) ]
     }
-    if (> $total-staged 0) {
+    if (-any-staged) {
       indicators = [ $@indicators (-colorized-glyph git-staged) ]
     }
     if (> $last-status[rev-ahead] 0) {
