@@ -60,8 +60,8 @@ fn -colorized [what color]{
   }
 }
 
-fn -colorized-glyph [segment-name]{
-  -colorized $glyph[$segment-name] $segment-style[$segment-name]
+fn -colorized-glyph [segment-name @extra-text]{
+  -colorized $glyph[$segment-name](joins "" $@extra-text) $segment-style[$segment-name]
 }
 
 fn prompt-segment [segment-or-style @texts]{
@@ -165,7 +165,7 @@ segment[timestamp] = {
 }
 
 segment[arrow] = {
-  -colorized $glyph[arrow]" " $segment-style[arrow]
+  -colorized-glyph arrow " "
 }
 
 fn -interpret-segment [seg]{
@@ -198,7 +198,7 @@ fn -build-chain [segments]{
     time = (-time { output = [(-interpret-segment $seg)] })
     if (> (count $output) 0) {
       if (not $first) {
-        -colorized $glyph[chain] $segment-style[chain]
+        -colorized-glyph chain
       }
       put $@output
       first = $false

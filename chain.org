@@ -223,11 +223,12 @@ Internal function to return a styled string, or plain if =color= is
 #+end_src
 
 The =-colorized-glyph= returns the glyph for the given segment, with its
-corresponding style.
+corresponding style. If extra arguments are given, they are
+concatenated after the glyph.
 
 #+begin_src elvish
-  fn -colorized-glyph [segment-name]{
-    -colorized $glyph[$segment-name] $segment-style[$segment-name]
+  fn -colorized-glyph [segment-name @extra-text]{
+    -colorized $glyph[$segment-name](joins "" $@extra-text) $segment-style[$segment-name]
   }
 #+end_src
 
@@ -443,7 +444,7 @@ cursor.
 
 #+begin_src elvish
   segment[arrow] = {
-    -colorized $glyph[arrow]" " $segment-style[arrow]
+    -colorized-glyph arrow " "
   }
 #+end_src
 
@@ -490,7 +491,7 @@ chain, including the chain connectors.
       time = (-time { output = [(-interpret-segment $seg)] })
       if (> (count $output) 0) {
         if (not $first) {
-          -colorized $glyph[chain] $segment-style[chain]
+          -colorized-glyph chain
         }
         put $@output
         first = $false
