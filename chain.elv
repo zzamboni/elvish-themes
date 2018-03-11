@@ -3,12 +3,15 @@
 # https://github.com/zzamboni/elvish-themes/blob/master/chain.org.
 # You should make any changes there and regenerate it from Emacs org-mode using C-c C-v t
 
+prompt-segments-defaults = [ su dir git-branch git-combined arrow ]
+rprompt-segments-defaults = [ ]
+
 use re
 
 use github.com/muesli/elvish-libs/git
 
-prompt-segments = [ su dir git-branch git-combined arrow ]
-rprompt-segments = [ ]
+prompt-segments = $prompt-segments-defaults
+rprompt-segments = $rprompt-segments-defaults
 
 glyph = [
   &git-branch=    "⎇"
@@ -24,9 +27,6 @@ glyph = [
 ]
 
 segment-style = [
-  &chain=         default
-  &su=            yellow
-  &dir=           cyan
   &git-branch=    blue
   &git-dirty=     yellow
   &git-ahead=     "38;5;52"
@@ -34,8 +34,11 @@ segment-style = [
   &git-staged=    "38;5;22"
   &git-untracked= "38;5;52"
   &git-deleted=   "38;5;52"
-  &timestamp=     gray
+  &su=            yellow
+  &chain=         default
   &arrow=         green
+  &dir=           cyan
+  &timestamp=     gray
 ]
 
 prompt-pwd-dir-length = 1
@@ -61,95 +64,77 @@ fn -colorized-glyph [segment-name]{
   -colorized $glyph[$segment-name] $segment-style[$segment-name]
 }
 
-fn prompt-segment [style @texts]{
+fn prompt-segment [segment-or-style @texts]{
+  style = $segment-or-style
+  if (has-key $segment-style $segment-or-style) {
+    style = $segment-style[$segment-or-style]
+  }
+  if (has-key $glyph $segment-or-style) {
+    texts = [ $glyph[$segment-or-style] $@texts ]
+  }
   text = "["(joins ' ' $texts)"]"
   -colorized $text $style
 }
 
+segment = [&]
+
 last-status = [&]
+
+fn -any-staged {
+  count [(each [k]{
+        explode $last-status[$k]
+  } [staged-modified staged-deleted staged-added renamed copied])]
+}
 
 fn -parse-git {
   last-status = (git:status)
+  last-status[any-staged] = (-any-staged)
 }
 
-fn segment-git-branch {
+segment[git-branch] = {
   branch = $last-status[branch-name]
   if (not-eq $branch "") {
     if (eq $branch '(detached)') {
       branch = $last-status[branch-oid][0:7]
     }
-    prompt-segment $segment-style[git-branch] $glyph[git-branch] $branch
+    prompt-segment git-branch $branch
   }
 }
 
-fn segment-git-dirty {
-  if (> $last-status[local-modified] 0) {
-    prompt-segment $segment-style[git-dirty] $glyph[git-dirty]
+fn -show-git-indicator [segment]{
+  status-name = [
+    &git-dirty=     local-modified
+    &git-ahead=     rev-ahead
+    &git-behind=    rev-behind
+    &git-staged=    any-staged
+    &git-untracked= untracked
+    &git-deleted=   local-deleted
+  ]
+  value = $last-status[$status-name[$segment]]
+  # The indicator must show if the element is >0 or a non-empty list
+  if (eq (kind-of $value) list) {
+    not-eq $value []
+  } else {
+    > $value 0
   }
 }
 
-fn segment-git-ahead {
-  if (> $last-status[rev-ahead] 0) {
-    prompt-segment $segment-style[git-ahead] $glyph[git-ahead]
+fn -git-prompt-segment [segment]{
+  if (-show-git-indicator $segment) {
+    prompt-segment $segment
   }
 }
 
-fn segment-git-behind {
-  if (> $last-status[rev-behind] 0) {
-    prompt-segment $segment-style[git-behind] $glyph[git-behind]
-  }
-}
+-git-indicator-segments = [untracked deleted dirty staged ahead behind]
 
-fn -any-staged {
-  each [k]{
-    if (not-eq $last-status[$k] []) {
-      any-staged = $true
-      put $true
-      return
-    }
-  } [staged-modified staged-deleted staged-added renamed copied]
-  put $false
-}
+each [ind]{
+  segment[git-$ind] = { -git-prompt-segment git-$ind }
+} $-git-indicator-segments
 
-fn segment-git-staged {
-  if (-any-staged) {
-    prompt-segment $segment-style[git-staged] $glyph[git-staged]
-  }
-}
-
-fn segment-git-untracked {
-  if (not-eq $last-status[untracked] []) {
-    prompt-segment $segment-style[git-untracked] $glyph[git-untracked]
-  }
-}
-
-fn segment-git-deleted {
-  if (not-eq $last-status[local-deleted] []) {
-    prompt-segment $segment-style[git-deleted] $glyph[git-deleted]
-  }
-}
-
-fn segment-git-combined {
-  indicators = []
-
-  if (not-eq $last-status[untracked] []) {
-    indicators = [ $@indicators (-colorized-glyph git-untracked) ]
-  }
-  if (not-eq $last-status[local-deleted] []) {
-    indicators = [ $@indicators (-colorized-glyph git-deleted) ]
-  }
-  if (not-eq $last-status[local-modified] []) {
-    indicators = [ $@indicators (-colorized-glyph git-dirty) ]
-  }
-  if (-any-staged) {
-    indicators = [ $@indicators (-colorized-glyph git-staged) ]
-  }
-  if (> $last-status[rev-ahead] 0) {
-    indicators = [ $@indicators (-colorized-glyph git-ahead) ]
-  }
-  if (> $last-status[rev-behind] 0) {
-    indicators = [ $@indicators (-colorized-glyph git-behind) ]
-  }
+segment[git-combined] = {
+  indicators = [(each [ind]{
+        if (-show-git-indicator git-$ind) { -colorized-glyph git-$ind }
+  } $-git-indicator-segments)]
   if (> (count $indicators) 0) {
     put '[' $@indicators ']'
   }
@@ -164,40 +149,24 @@ fn -prompt-pwd {
   }
 }
 
-fn segment-dir {
-  prompt-segment $segment-style[dir] (-prompt-pwd)
+segment[dir] = {
+  prompt-segment dir (-prompt-pwd)
 }
 
-fn segment-su {
+segment[su] = {
   uid = (id -u)
   if (eq $uid $root-id) {
-    prompt-segment $segment-style[su] $glyph[su]
+    prompt-segment su
   }
 }
 
-fn segment-timestamp {
-  prompt-segment $segment-style[timestamp] (date +$timestamp-format)
+segment[timestamp] = {
+  prompt-segment timestamp (date +$timestamp-format)
 }
 
-fn segment-arrow {
+segment[arrow] = {
   -colorized $glyph[arrow]" " $segment-style[arrow]
 }
-
-# List of built-in segments
-segment = [
-  &su=            $segment-su~
-  &dir=           $segment-dir~
-  &git-branch=    $segment-git-branch~
-  &git-dirty=     $segment-git-dirty~
-  &git-ahead=     $segment-git-ahead~
-  &git-behind=    $segment-git-behind~
-  &git-staged=    $segment-git-staged~
-  &git-untracked= $segment-git-untracked~
-  &git-deleted=   $segment-git-deleted~
-  &git-combined=  $segment-git-combined~
-  &arrow=         $segment-arrow~
-  &timestamp=     $segment-timestamp~
-]
 
 fn -interpret-segment [seg]{
   k = (kind-of $seg)
@@ -219,6 +188,9 @@ fn -interpret-segment [seg]{
 }
 
 fn -build-chain [segments]{
+  if (eq $segments []) {
+    return
+  }
   first = $true
   output = ""
   -parse-git
@@ -235,11 +207,15 @@ fn -build-chain [segments]{
 }
 
 fn prompt {
-  put (-build-chain $prompt-segments)
+  if (not-eq $prompt-segments []) {
+    put (-build-chain $prompt-segments)
+  }
 }
 
 fn rprompt {
-  put (-build-chain $rprompt-segments)
+  if (not-eq $rprompt-segments []) {
+    put (-build-chain $rprompt-segments)
+  }
 }
 
 fn init {
