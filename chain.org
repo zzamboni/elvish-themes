@@ -325,12 +325,9 @@ them.
 #+begin_src elvish
   fn -show-git-indicator [segment]{
     status-name = [
-      &git-dirty=     local-modified
-      &git-ahead=     rev-ahead
-      &git-behind=    rev-behind
-      &git-staged=    any-staged
-      &git-untracked= untracked
-      &git-deleted=   local-deleted
+      &git-dirty=  local-modified  &git-staged=    any-staged
+      &git-ahead=  rev-ahead       &git-untracked= untracked
+      &git-behind= rev-behind      &git-deleted=   local-deleted
     ]
     value = $last-status[$status-name[$segment]]
     # The indicator must show if the element is >0 or a non-empty list
