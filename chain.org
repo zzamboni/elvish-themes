@@ -2,7 +2,6 @@
 #+property: header-args :mkdirp yes :comments no
 #+startup: indent
 
-
 #+title: Elvish Chain theme prompt
 #+author: Diego Zamboni
 #+email: diego@zzamboni.org
@@ -161,7 +160,7 @@ I use.
 #+end_src
 
 Styling for each built-in segment. The value must be a valid argument
-to [[https://elvish.io/ref/edit.html#editstyled][=edit:styled=]].
+to =[[https://elvish.io/ref/edit.html#editstyled][edit:styled]]=.
 
 #+begin_src elvish
   segment-style = [
