@@ -61,7 +61,7 @@ fn -colorized [what color]{
 }
 
 fn -colorized-glyph [segment-name @extra-text]{
-  -colorized $glyph[$segment-name](joins "" $@extra-text) $segment-style[$segment-name]
+  -colorized $glyph[$segment-name](joins "" $extra-text) $segment-style[$segment-name]
 }
 
 fn prompt-segment [segment-or-style @texts]{
