@@ -13,7 +13,7 @@ use github.com/muesli/elvish-libs/git
 prompt-segments = $prompt-segments-defaults
 rprompt-segments = $rprompt-segments-defaults
 
-glyph = [
+default-glyph = [
   &git-branch=    "⎇"
   &git-dirty=     "✎ "
   &git-ahead=     "⬆"
@@ -26,7 +26,7 @@ glyph = [
   &arrow=         ">"
 ]
 
-segment-style = [
+default-segment-style = [
   &git-branch=    blue
   &git-dirty=     yellow
   &git-ahead=     "38;5;52"
@@ -40,6 +40,9 @@ segment-style = [
   &dir=           cyan
   &timestamp=     gray
 ]
+
+glyph = [&]
+segment-style = [&]
 
 prompt-pwd-dir-length = 1
 
@@ -60,17 +63,33 @@ fn -colorized [what color]{
   }
 }
 
+fn -glyph [segment-name]{
+  if (has-key $glyph $segment-name) {
+    put $glyph[$segment-name]
+  } else {
+    put $default-glyph[$segment-name]
+  }
+}
+
+fn -segment-style [segment-name]{
+  if (has-key $segment-style $segment-name) {
+    put $segment-style[$segment-name]
+  } else {
+    put $default-segment-style[$segment-name]
+  }
+}
+
 fn -colorized-glyph [segment-name @extra-text]{
-  -colorized $glyph[$segment-name](joins "" $extra-text) $segment-style[$segment-name]
+  -colorized (-glyph $segment-name)(joins "" $extra-text) (-segment-style $segment-name)
 }
 
 fn prompt-segment [segment-or-style @texts]{
   style = $segment-or-style
-  if (has-key $segment-style $segment-or-style) {
-    style = $segment-style[$segment-or-style]
+  if (has-key $default-segment-style $segment-or-style) {
+    style = (-segment-style $segment-or-style)
   }
-  if (has-key $glyph $segment-or-style) {
-    texts = [ $glyph[$segment-or-style] $@texts ]
+  if (has-key $default-glyph $segment-or-style) {
+    texts = [ (-glyph $segment-or-style) $@texts ]
   }
   text = "["(joins ' ' $texts)"]"
   -colorized $text $style

@@ -145,7 +145,7 @@ tune as needed. The default values work fine for the [[http://levien.com/type/my
 I use.
 
 #+begin_src elvish
-  glyph = [
+  default-glyph = [
     &git-branch=    "⎇"
     &git-dirty=     "✎ "
     &git-ahead=     "⬆"
@@ -163,7 +163,7 @@ Styling for each built-in segment. The value must be a valid argument
 to =[[https://elvish.io/ref/edit.html#editstyled][edit:styled]]=.
 
 #+begin_src elvish
-  segment-style = [
+  default-segment-style = [
     &git-branch=    blue
     &git-dirty=     yellow
     &git-ahead=     "38;5;52"
@@ -177,6 +177,13 @@ to =[[https://elvish.io/ref/edit.html#editstyled][edit:styled]]=.
     &dir=           cyan
     &timestamp=     gray
   ]
+#+end_src
+
+The =$glyph= and =$segment-style= maps are where the user can assign their custom glyphs or styles. Both are empty by default. If an element does not exist in these variables, the corresponding default value is used.
+
+#+begin_src elvish
+  glyph = [&]
+  segment-style = [&]
 #+end_src
 
 To how many letters to abbreviate directories in the path - 0 to show in full.
@@ -221,13 +228,35 @@ Internal function to return a styled string, or plain if =color= is
   }
 #+end_src
 
+We have two auxiliary functions to return the glyph or style corresponding to a given segment. Default values are stored in the module's =$default-glyph= and =$default-segment-style= variables, but the user can provide their own values by setting =$glyph= and =$segment-style= respectively.
+
+#+begin_src elvish
+  fn -glyph [segment-name]{
+    if (has-key $glyph $segment-name) {
+      put $glyph[$segment-name]
+    } else {
+      put $default-glyph[$segment-name]
+    }
+  }
+#+end_src
+
+#+begin_src elvish
+  fn -segment-style [segment-name]{
+    if (has-key $segment-style $segment-name) {
+      put $segment-style[$segment-name]
+    } else {
+      put $default-segment-style[$segment-name]
+    }
+  }
+#+end_src
+
 The =-colorized-glyph= returns the glyph for the given segment, with its
 corresponding style. If extra arguments are given, they are
 concatenated after the glyph.
 
 #+begin_src elvish
   fn -colorized-glyph [segment-name @extra-text]{
-    -colorized $glyph[$segment-name](joins "" $extra-text) $segment-style[$segment-name]
+    -colorized (-glyph $segment-name)(joins "" $extra-text) (-segment-style $segment-name)
   }
 #+end_src
 
@@ -241,11 +270,11 @@ automatically prepended to the given text.
 #+begin_src elvish
   fn prompt-segment [segment-or-style @texts]{
     style = $segment-or-style
-    if (has-key $segment-style $segment-or-style) {
-      style = $segment-style[$segment-or-style]
+    if (has-key $default-segment-style $segment-or-style) {
+      style = (-segment-style $segment-or-style)
     }
-    if (has-key $glyph $segment-or-style) {
-      texts = [ $glyph[$segment-or-style] $@texts ]
+    if (has-key $default-glyph $segment-or-style) {
+      texts = [ (-glyph $segment-or-style) $@texts ]
     }
     text = "["(joins ' ' $texts)"]"
     -colorized $text $style
