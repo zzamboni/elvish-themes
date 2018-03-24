@@ -42,55 +42,39 @@ to explain. See [[file:chain.elv][chain.elv]] for the generated file.
 
 * Use
 
-To use this theme, first install the [[https://github.com/zzamboni/elvish-themes][github.com/zzamboni/elvish-themes]]
-package using [[https://elvish.io/ref/epm.html][epm]]:
+To use this theme, first install the [[https://github.com/zzamboni/elvish-themes][github.com/zzamboni/elvish-themes]] package using [[https://elvish.io/ref/epm.html][epm]]:
 
 #+begin_src elvish :tangle no
   epm:install github.com/zzamboni/elvish-themes
 #+end_src
 
-You can do this interactively or from your =~/.elvish/rc.elv= file. If
-you want to put this in your =rc.elv= so that the package is
-automatically installed when needed, and avoid having a message
-printed every time the shell starts, you can add the
-=&silent-if-installed=$true= option to the above command.
+You can do this interactively or from your =~/.elvish/rc.elv= file. If you want to put this in your =rc.elv= so that the package is automatically installed when needed, and avoid having a message printed every time the shell starts, you can add the =&silent-if-installed=$true= option to the above command.
 
-Add the following to you =~/.elvish/rc.elv= file to load and configure
-the theme:
+Add the following to you =~/.elvish/rc.elv= file to load and configure the theme:
 
 #+begin_src elvish :tangle no
   use github.com/zzamboni/elvish-themes/chain
 #+end_src
 
-If you want the prompt to be shown using bold fonts, set the
-following:
+If you want the prompt to be shown using bold fonts, set the following:
 
 #+begin_src elvish :tangle no
   chain:bold-prompt = $true
 #+end_src
 
-The default Elvish prompt settings work fine, but if you want to fine
-tune them, check the [[https://elvish.io/ref/edit.html#prompts][Prompts]] documentation. For example, if you want
-to keep the prompt from showing inverted when "stale" (this may happen
-if you use git segments and are in a large git repo), you could set
-the stale-prompt transformer to an identity function:
+The default Elvish prompt settings work fine, but if you want to fine tune them, check the [[https://elvish.io/ref/edit.html#prompts][Prompts]] documentation. For example, if you want to keep the prompt from showing inverted when "stale" (this may happen if you use git segments and are in a large git repo), you could set the stale-prompt transformer to an identity function:
 
 #+begin_src elvish :tangle no
   edit:prompt-stale-transform = $all~
 #+end_src
 
-If you want the prompt to be grayed out when stale, you can do the
-following:
+If you want the prompt to be grayed out when stale, you can do the following:
 
 #+begin_src elvish :tangle no
   edit:prompt-stale-transform = { each [x]{ edit:styled $x[text] "gray" } }
 #+end_src
 
- The chains on both sides can be configured by assigning to
-=theme:chain:prompt-segments= and =theme:chain:rprompt-segments=,
-respectively. These variables must be arrays, and the given segments
-will be automatically linked by =$theme:chain:glyph[chain]=. Their
-default values are:
+ The chains on both sides can be configured by assigning to =theme:chain:prompt-segments= and =theme:chain:rprompt-segments=, respectively. These variables must be arrays, and the given segments will be automatically linked by =$theme:chain:glyph[chain]=. Their default values are:
 
 #+begin_src elvish
   prompt-segments-defaults = [ su dir git-branch git-combined arrow ]
@@ -99,22 +83,12 @@ default values are:
 
 Each element can be any of the following:
 
-- The name of one of the built-in segments. Available segments: =arrow=,
-  =timestamp=, =su=, =dir=, =session= (a glyph with a unique color for the
-  current session, based on its PID), =git-branch=, =git-dirty=,
-  =git-untracked=, =git-deleted=, =git-ahead=, =git-behind=, =git-staged=,
-  =git-combined= (which combines in a single segment all the other git
-  status indicators)
-- A string or the output of [[https://elvish.io/ref/edit.html#editstyled][edit:styled]], which will be displayed
-  as-is.
-- A lambda, which will be called and its output displayed
-- The output of a call to =chain:segment <style> <strings>=, which
-  returns a "proper" segment, enclosed in square brackets and styled
-  as requested.
+- The name of one of the built-in segments. Available segments: =arrow=, =timestamp=, =su=, =dir=, =session= (a glyph with a unique color for the current session, based on its PID), =git-branch=, =git-dirty=, =git-untracked=, =git-deleted=, =git-ahead=, =git-behind=, =git-staged=, =git-combined= (which combines in a single segment all the other git status indicators);
+- A string or the output of [[https://elvish.io/ref/edit.html#editstyled][edit:styled]], which will be displayed as-is;
+- A lambda, which will be called and its output displayed;
+- The output of a call to =chain:segment <style> <strings>=, which returns a "proper" segment, enclosed in square brackets and styled as requested.
 
-You can customize the glyphs and styles used for the different
-segments by assigning to the corresponding elements of =chain:glyph= and
-=chain:segment-style=, respectively.
+You can customize the glyphs and styles used for the different segments by assigning to the corresponding elements of =chain:glyph= and =chain:segment-style=, respectively.
 
 The value assigned to an element of =chain:segment-style= can be:
 
@@ -138,20 +112,14 @@ We use [[https://github.com/muesli/elvish-libs/blob/master/git.elv][muesli's git
   use github.com/muesli/elvish-libs/git
 #+end_src
 
-Set up the default values for the chains (all can be configured by
-assigning to the appropriate variable):
+Set up the default values for the chains (all can be configured by assigning to the appropriate variable):
 
 #+begin_src elvish
   prompt-segments = $prompt-segments-defaults
   rprompt-segments = $rprompt-segments-defaults
 #+end_src
 
-Set up the default values for the glyphs used in the different
-chains. Note that some of the Unicode glyphs may need an extra space
-after them so that the character does not run into the next one in the
-terminal. This is highly dependent on the font you use, so please fine
-tune as needed. The default values work fine for the [[http://levien.com/type/myfonts/inconsolata.html][Inconsolata]] font
-I use.
+Set up the default values for the glyphs used in the different chains. Note that some of the Unicode glyphs may need an extra space after them so that the character does not run into the next one in the terminal. This is highly dependent on the font you use, so please fine tune as needed. The default values work fine for the [[http://levien.com/type/myfonts/inconsolata.html][Inconsolata]] font I use.
 
 #+begin_src elvish
   default-glyph = [
@@ -169,8 +137,7 @@ I use.
   ]
 #+end_src
 
-Styling for each built-in segment. The value must be a valid argument
-to =[[https://elvish.io/ref/edit.html#editstyled][edit:styled]]=.
+Styling for each built-in segment. The value must be a valid argument to =[[https://elvish.io/ref/edit.html#editstyled][edit:styled]]=.
 
 #+begin_src elvish
   default-segment-style = [
@@ -223,8 +190,7 @@ Whether the prompt should be bold.
 
 ** General utility functions
 
-Function to choose a color based on the current value of =$pid=, as an
-indicator of the current session.
+Function to choose a color based on the current value of =$pid=, as an indicator of the current session.
 
 #+begin_src elvish
   fn -session-color {
@@ -272,9 +238,7 @@ We have two auxiliary functions to return the glyph or style corresponding to a 
   }
 #+end_src
 
-The =-colorized-glyph= returns the glyph for the given segment, with its
-corresponding style. If extra arguments are given, they are
-concatenated after the glyph.
+The =-colorized-glyph= returns the glyph for the given segment, with its corresponding style. If extra arguments are given, they are concatenated after the glyph.
 
 #+begin_src elvish
   fn -colorized-glyph [segment-name @extra-text]{
@@ -282,12 +246,7 @@ concatenated after the glyph.
   }
 #+end_src
 
-Build a prompt segment in the given style, surrounded by square
-brackets. The first argument can be a style argument understood by
-=edit:styled=, or the name of one of the predefined segments. In the
-latter case, the style is taken from the =$segment-style= map, and if a
-glyph for that segment name exists in the =$glyph= map, it is
-automatically prepended to the given text.
+Build a prompt segment in the given style, surrounded by square brackets. The first argument can be a style argument understood by =edit:styled=, or the name of one of the predefined segments. In the latter case, the style is taken from the =$segment-style= map, and if a glyph for that segment name exists in the =$glyph= map, it is automatically prepended to the given text.
 
 #+begin_src elvish
   fn prompt-segment [segment-or-style @texts]{
@@ -305,10 +264,7 @@ automatically prepended to the given text.
 
 ** Built-in Segment Definitions
 
-This is where the built-in segments are defined. We assign the
-corresponding functions to elements of the =$segment= map, indexed by
-their segment name. The segment names need to correspond between the
-=$segment=, =$glyph= and =$segment-style= maps.
+This is where the built-in segments are defined. We assign the corresponding functions to elements of the =$segment= map, indexed by their segment name. The segment names need to correspond between the =$segment=, =$glyph= and =$segment-style= maps.
 
 #+begin_src elvish
   segment = [&]
@@ -316,20 +272,15 @@ their segment name. The segment names need to correspond between the
 
 *** git-related segments
 
-Note that all the git-related segment functions only produce an output
-if the current directory contains a git repository.
+Note that all the git-related segment functions only produce an output if the current directory contains a git repository.
 
-We define a module-level variable which contains the latest git
-information. It gets populated once-per-prompt by the =-parse-git=
-function, and the information is used by all the segments.
+We define a module-level variable which contains the latest git information. It gets populated once-per-prompt by the =-parse-git= function, and the information is used by all the segments.
 
 #+begin_src elvish
   last-status = [&]
 #+end_src
 
-The =-any-staged= function indicates whether there are any staged
-changes (can be files added, deleted, modified, renamed or copied),
-and is used below to extend the results from =git:status=.
+The =-any-staged= function indicates whether there are any staged changes (can be files added, deleted, modified, renamed or copied), and is used below to extend the results from =git:status=.
 
 #+begin_src elvish
   fn -any-staged {
@@ -339,9 +290,7 @@ and is used below to extend the results from =git:status=.
   }
 #+end_src
 
-The =-parse-git= function calls =git:status= to get the git status of the
-current directory. It extends the results with the result from
-=-any-staged= to have an easy indicator of staged files.
+The =-parse-git= function calls =git:status= to get the git status of the current directory. It extends the results with the result from =-any-staged= to have an easy indicator of staged files.
 
 #+begin_src elvish
   fn -parse-git {
@@ -350,9 +299,7 @@ current directory. It extends the results with the result from
   }
 #+end_src
 
-The =git-branch= segment indicates the current branch name. If we are in
-a detached-branch state, we return the first 6 digits of the commit
-ID.
+The =git-branch= segment indicates the current branch name. If we are in a detached-branch state, we return the first 6 digits of the commit ID.
 
 #+begin_src elvish
   segment[git-branch] = {
@@ -366,11 +313,7 @@ ID.
   }
 #+end_src
 
-The =-show-git-indicator= function takes a git segment name and returns
-whether it should be shown, depending on the information stored in
-=$last-status=. Since the git segment names do not correspond one-to-one
-with the elements of =$last-status=, we do here the mapping between
-them.
+The =-show-git-indicator= function takes a git segment name and returns whether it should be shown, depending on the information stored in =$last-status=. Since the git segment names do not correspond one-to-one with the elements of =$last-status=, we do here the mapping between them.
 
 #+begin_src elvish
   fn -show-git-indicator [segment]{
@@ -405,13 +348,9 @@ We support the following git indicator segments:
   -git-indicator-segments = [untracked deleted dirty staged ahead behind]
 #+end_src
 
-- The =git-dirty= segment indicates whether any files are "dirty"
-  (modified locally).
-- The =git-ahead= and =git-behind= segments indicate whether the current
-  repository is ahead or behind of the upstream remote, if any.
-- The =git-staged=, =git-untracked= and =git-deleted= segments indicate
-  whether there are staged-but-uncommited, untracked or
-  deleted-but-still-tracked files, respectively.
+- The =git-dirty= segment indicates whether any files are "dirty" (modified locally).
+- The =git-ahead= and =git-behind= segments indicate whether the current repository is ahead or behind of the upstream remote, if any.
+- The =git-staged=, =git-untracked= and =git-deleted= segments indicate whether there are staged-but-uncommited, untracked or deleted-but-still-tracked files, respectively.
 
 Using =-git-prompt-segment=, we define all these git segments.
 
@@ -421,8 +360,7 @@ Using =-git-prompt-segment=, we define all these git segments.
   } $-git-indicator-segments
 #+end_src
 
-The =git-combined= segment combines all the different status indicators
-in a single segment.
+The =git-combined= segment combines all the different status indicators in a single segment.
 
 #+begin_src elvish
   segment[git-combined] = {
@@ -437,9 +375,7 @@ in a single segment.
 
 *** =dir=
 
-For this segment we also need a support function, which returns
-the current path with each directory name shortened to a maximum
-of =$prompt-pwd-dir-length= characters.
+For this segment we also need a support function, which returns the current path with each directory name shortened to a maximum of =$prompt-pwd-dir-length= characters.
 
 #+begin_src elvish
   fn -prompt-pwd {
@@ -460,9 +396,7 @@ of =$prompt-pwd-dir-length= characters.
 
 *** =su=
 
-This segment outputs a glyph if the current user has a privileged
-ID (=root= by default, with ID 0, but can be configured by
-changing =$root-id=).
+This segment outputs a glyph if the current user has a privileged ID (=root= by default, with ID 0, but can be configured by changing =$root-id=).
 
 #+begin_src elvish
   segment[su] = {
@@ -475,8 +409,7 @@ changing =$root-id=).
 
 *** =timestamp=
 
-This segment simply outputs the current date according to the
-format defined in =$timestamp-format=.
+This segment simply outputs the current date according to the format defined in =$timestamp-format=.
 
 #+begin_src elvish
   segment[timestamp] = {
@@ -496,8 +429,7 @@ This segment prints a session indicator in a color unique to the current session
 
 *** =arrow=
 
-This segment prints the separator between the other chains and the
-cursor.
+This segment prints the separator between the other chains and the cursor.
 
 #+begin_src elvish
   segment[arrow] = {
@@ -507,9 +439,7 @@ cursor.
 
 ** Chain- and prompt-building functions
 
-Given a segment specification, return the appropriate value,
-depending on whether it's the name of a built-in segment, a lambda,
-a string or an edit:styled
+Given a segment specification, return the appropriate value, depending on whether it's the name of a built-in segment, a lambda, a string or an edit:styled
 
 #+begin_src elvish
   fn -interpret-segment [seg]{
@@ -532,9 +462,7 @@ a string or an edit:styled
   }
 #+end_src
 
-Given a list of segments (which can be built-in segment names,
-lambdas, strings or ~edit:styled~ objects), return the appropriate
-chain, including the chain connectors.
+Given a list of segments (which can be built-in segment names, lambdas, strings or ~edit:styled~ objects), return the appropriate chain, including the chain connectors.
 
 #+begin_src elvish
   fn -build-chain [segments]{
@@ -557,9 +485,7 @@ chain, including the chain connectors.
   }
 #+end_src
 
-Finally, we get to the functions that build the left and right
-prompts, respectively. These are basically wrappers around
-=-build-chain= with the corresponding arguments.
+Finally, we get to the functions that build the left and right prompts, respectively. These are basically wrappers around =-build-chain= with the corresponding arguments.
 
 #+begin_src elvish
   fn prompt {
@@ -577,8 +503,7 @@ prompts, respectively. These are basically wrappers around
 
 ** Initialization
 
-Default setup function, assigning our functions to =edit:prompt= and
-=edit:rprompt=
+Default setup function, assigning our functions to =edit:prompt= and =edit:rprompt=
 
 #+begin_src elvish
   fn init {
