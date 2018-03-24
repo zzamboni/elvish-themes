@@ -35,6 +35,7 @@ to explain. See [[file:chain.elv][chain.elv]] for the generated file.
     - [[#dir][=dir=]]
     - [[#su][=su=]]
     - [[#timestamp][=timestamp=]]
+    - [[#session][=session=]]
     - [[#arrow][=arrow=]]
   - [[#chain--and-prompt-building-functions][Chain- and prompt-building functions]]
   - [[#initialization][Initialization]]
@@ -99,9 +100,11 @@ default values are:
 Each element can be any of the following:
 
 - The name of one of the built-in segments. Available segments: =arrow=,
-  =timestamp=, =su=, =dir=, =git-branch=, =git-dirty=, =git-untracked=,
-  =git-deleted=, =git-ahead=, =git-behind=, =git-staged=, =git-combined= (which
-  combines in a single segment all the other git status indicators)
+  =timestamp=, =su=, =dir=, =session= (a glyph with a unique color for the
+  current session, based on its PID), =git-branch=, =git-dirty=,
+  =git-untracked=, =git-deleted=, =git-ahead=, =git-behind=, =git-staged=,
+  =git-combined= (which combines in a single segment all the other git
+  status indicators)
 - A string or the output of [[https://elvish.io/ref/edit.html#editstyled][edit:styled]], which will be displayed
   as-is.
 - A lambda, which will be called and its output displayed
@@ -112,6 +115,12 @@ Each element can be any of the following:
 You can customize the glyphs and styles used for the different
 segments by assigning to the corresponding elements of =chain:glyph= and
 =chain:segment-style=, respectively.
+
+The value assigned to an element of =chain:segment-style= can be:
+
+- Any valid argument to [[https://elvish.io/ref/edit.html#editstyled][edit:styled]].
+- The string =default= to indicate no special color (this will show in your regular terminal text color).
+- The string =session= to produce a color based on the current process ID, which can be used to indicate a unique color for the current session. This is used by the =session= segment, but can be assigned to any segment.
 
 * Implementation
 
@@ -155,6 +164,7 @@ I use.
     &git-deleted=   "-"
     &su=            "⚡"
     &chain=         "─"
+    &session=       "●"
     &arrow=         ">"
   ]
 #+end_src
@@ -175,6 +185,7 @@ to =[[https://elvish.io/ref/edit.html#editstyled][edit:styled]]=.
     &chain=         default
     &arrow=         green
     &dir=           cyan
+    &session=       session
     &timestamp=     gray
   ]
 #+end_src
@@ -212,12 +223,23 @@ Whether the prompt should be bold.
 
 ** General utility functions
 
-Internal function to return a styled string, or plain if =color= is
-"default".
+Function to choose a color based on the current value of =$pid=, as an
+indicator of the current session.
+
+#+begin_src elvish
+  fn -session-color {
+    + (% $pid 216) 16
+  }
+#+end_src
+
+Internal function to return a styled string, or plain if =color= is "default". If =$color= is "session", then a unique color is chosen for the current session using the =-session-color= function.
 
 #+begin_src elvish
   fn -colorized [what color]{
     if (!=s $color default) {
+      if (eq $color session) {
+        color = "38;5;"(-session-color)
+      }
       if $bold-prompt {
         color = $color";bold"
       }
@@ -459,6 +481,16 @@ format defined in =$timestamp-format=.
 #+begin_src elvish
   segment[timestamp] = {
     prompt-segment timestamp (date +$timestamp-format)
+  }
+#+end_src
+
+*** =session=
+
+This segment prints a session indicator in a color unique to the current session, based on its =$pid=.
+
+#+begin_src elvish
+  segment[session] = {
+    prompt-segment session
   }
 #+end_src
 

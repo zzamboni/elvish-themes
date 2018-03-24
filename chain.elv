@@ -23,6 +23,7 @@ default-glyph = [
   &git-deleted=   "-"
   &su=            "⚡"
   &chain=         "─"
+  &session=       "●"
   &arrow=         ">"
 ]
 
@@ -38,6 +39,7 @@ default-segment-style = [
   &chain=         default
   &arrow=         green
   &dir=           cyan
+  &session=       session
   &timestamp=     gray
 ]
 
@@ -52,8 +54,15 @@ root-id = 0
 
 bold-prompt = $false
 
+fn -session-color {
+  + (% $pid 216) 16
+}
+
 fn -colorized [what color]{
   if (!=s $color default) {
+    if (eq $color session) {
+      color = "38;5;"(-session-color)
+    }
     if $bold-prompt {
       color = $color";bold"
     }
@@ -178,6 +187,10 @@ segment[su] = {
 
 segment[timestamp] = {
   prompt-segment timestamp (date +$timestamp-format)
+}
+
+segment[session] = {
+  prompt-segment session
 }
 
 segment[arrow] = {
