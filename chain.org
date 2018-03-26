@@ -13,19 +13,13 @@
   # You should make any changes there and regenerate it from Emacs org-mode using C-c C-v t
 #+end_src
 
-* Introduction
-
-This is my implementation for [[http://elvish.io][Elvish]] of the /Chain/ prompt theme,
-based on the original fish theme at
-https://github.com/oh-my-fish/theme-chain.
+This is my implementation for [[http://elvish.io][Elvish]] of the /Chain/ prompt theme, based on the original fish theme at https://github.com/oh-my-fish/theme-chain.
 
 Ported to Elvish by Diego Zamboni <diego@zzamboni.org>.
 
-This file is written in [[http://www.howardism.org/Technical/Emacs/literate-programming-tutorial.html][literate programming style]], to make it easy
-to explain. See [[file:chain.elv][chain.elv]] for the generated file.
+This file is written in [[http://www.howardism.org/Technical/Emacs/literate-programming-tutorial.html][literate programming style]], to make it easy to explain. See [[file:chain.elv][chain.elv]] for the generated file.
 
 * Table of Contents                                          :TOC_3:noexport:
-- [[#introduction][Introduction]]
 - [[#use][Use]]
 - [[#implementation][Implementation]]
   - [[#base-code-and-default-values][Base code and default values]]
