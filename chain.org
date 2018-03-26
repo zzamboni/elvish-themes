@@ -148,6 +148,7 @@ Styling for each built-in segment. The value must be a valid argument to =[[http
     &git-staged=    "38;5;22"
     &git-untracked= "38;5;52"
     &git-deleted=   "38;5;52"
+    &git-combined=  default
     &su=            yellow
     &chain=         default
     &arrow=         green
@@ -360,7 +361,7 @@ Using =-git-prompt-segment=, we define all these git segments.
   } $-git-indicator-segments
 #+end_src
 
-The =git-combined= segment combines all the different status indicators in a single segment.
+The =git-combined= segment combines all the different status indicators in a single segment. The =$segment-style[git-combined]= value determines the color used for the surrounding brackets.
 
 #+begin_src elvish
   segment[git-combined] = {
@@ -368,7 +369,8 @@ The =git-combined= segment combines all the different status indicators in a sin
           if (-show-git-indicator git-$ind) { -colorized-glyph git-$ind }
     } $-git-indicator-segments)]
     if (> (count $indicators) 0) {
-      put '[' $@indicators ']'
+      color = (-segment-style git-combined)
+      put (-colorized '[' $color) $@indicators (-colorized ']' $color)
     }
   }
 #+end_src

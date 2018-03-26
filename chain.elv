@@ -35,6 +35,7 @@ default-segment-style = [
   &git-staged=    "38;5;22"
   &git-untracked= "38;5;52"
   &git-deleted=   "38;5;52"
+  &git-combined=  default
   &su=            yellow
   &chain=         default
   &arrow=         green
@@ -161,7 +162,8 @@ segment[git-combined] = {
         if (-show-git-indicator git-$ind) { -colorized-glyph git-$ind }
   } $-git-indicator-segments)]
   if (> (count $indicators) 0) {
-    put '[' $@indicators ']'
+    color = (-segment-style git-combined)
+    put (-colorized '[' $color) $@indicators (-colorized ']' $color)
   }
 }
 
