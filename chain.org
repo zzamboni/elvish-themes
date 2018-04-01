@@ -26,11 +26,11 @@ This file is written in [[http://www.howardism.org/Technical/Emacs/literate-prog
   - [[#general-utility-functions][General utility functions]]
   - [[#built-in-segment-definitions][Built-in Segment Definitions]]
     - [[#git-related-segments][git-related segments]]
-    - [[#dir][=dir=]]
-    - [[#su][=su=]]
-    - [[#timestamp][=timestamp=]]
-    - [[#session][=session=]]
-    - [[#arrow][=arrow=]]
+    - [[#dir][dir]]
+    - [[#su][su]]
+    - [[#timestamp][timestamp]]
+    - [[#session][session]]
+    - [[#arrow][arrow]]
   - [[#chain--and-prompt-building-functions][Chain- and prompt-building functions]]
   - [[#initialization][Initialization]]
 
@@ -369,7 +369,7 @@ The =git-combined= segment combines all the different status indicators in a sin
   }
 #+end_src
 
-*** =dir=
+*** dir
 
 For this segment we also need a support function, which returns the current path with each directory name shortened to a maximum of =$prompt-pwd-dir-length= characters.
 
@@ -390,7 +390,7 @@ For this segment we also need a support function, which returns the current path
   }
 #+end_src
 
-*** =su=
+*** su
 
 This segment outputs a glyph if the current user has a privileged ID (=root= by default, with ID 0, but can be configured by changing =$root-id=).
 
@@ -403,7 +403,7 @@ This segment outputs a glyph if the current user has a privileged ID (=root= by 
   }
 #+end_src
 
-*** =timestamp=
+*** timestamp
 
 This segment simply outputs the current date according to the format defined in =$timestamp-format=.
 
@@ -413,7 +413,7 @@ This segment simply outputs the current date according to the format defined in 
   }
 #+end_src
 
-*** =session=
+*** session
 
 This segment prints a session indicator in a color unique to the current session, based on its =$pid=.
 
@@ -423,7 +423,7 @@ This segment prints a session indicator in a color unique to the current session
   }
 #+end_src
 
-*** =arrow=
+*** arrow
 
 This segment prints the separator between the other chains and the cursor.
 
