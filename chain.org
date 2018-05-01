@@ -33,6 +33,7 @@ This file is written in [[http://www.howardism.org/Technical/Emacs/literate-prog
     - [[#arrow][arrow]]
   - [[#chain--and-prompt-building-functions][Chain- and prompt-building functions]]
   - [[#initialization][Initialization]]
+  - [[#bonus-useful-functions][Bonus useful functions]]
 
 * Use
 
@@ -89,6 +90,23 @@ The value assigned to an element of =chain:segment-style= can be:
 - Any valid argument to [[https://elvish.io/ref/edit.html#editstyled][edit:styled]].
 - The string =default= to indicate no special color (this will show in your regular terminal text color).
 - The string =session= to produce a color based on the current process ID, which can be used to indicate a unique color for the current session. This is used by the =session= segment, but can be assigned to any segment.
+
+The module also includes the =chain:summary-status= function, which provides a useful summary of some predetermined git repositories, using the =git-combined= segment. I use this to get a quick summary of the status of my most commonly-used repos.
+
+#+begin_src elvish :use github.com/zzamboni/elvish-themes/chain :tangle no :exports both
+chain:summary-repos = [ ~/.elvish ~/.emacs.d ~/.hammerspoon]
+chain:summary-status
+#+end_src
+
+#+RESULTS:
+: Exception: [31;1mnew variables can only be created in local scope[m
+: Traceback:
+:   /Users/taazadi1/.elvish/lib/github.com/zzamboni/elvish-themes/chain.elv, line 253:
+:       [1;4medit:prompt[m = $prompt~
+:   /Users/taazadi1/.elvish/lib/github.com/zzamboni/elvish-themes/chain.elv, line 257:
+:     [1;4minit[m
+:   /Users/taazadi1/.elvish/lib/github.com/zzamboni/elvish-themes/elvish-nNRmiG, line 1:
+:     [1;4muse github.com/zzamboni/elvish-themes/chain[m
 
 * Implementation
 
@@ -512,4 +530,27 @@ We call the =init= function automatically on module load.
 
 #+begin_src elvish
   init
+#+end_src
+
+** Bonus useful functions
+
+=chain:summary-status= provides a summarized list of the =git-combined= indicators for the repositories specified in =$chain:summary-repos=.
+
+#+begin_src elvish
+summary-repos = []
+
+fn summary-status {
+  prev = $pwd
+  put $@summary-repos | each $echo~ | sort |
+  each [r]{
+    cd $r
+    -parse-git
+    status = [($segment[git-combined])]
+    if (eq $status []) {
+      status = [(-colorized "[" session) (edit:styled OK green) (-colorized "]" session)]
+    }
+    echo $@status (edit:styled (tilde-abbr $r) blue)
+  }
+  cd $prev
+}
 #+end_src
