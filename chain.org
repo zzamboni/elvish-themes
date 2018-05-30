@@ -66,7 +66,7 @@ The default Elvish prompt settings work fine, but if you want to fine tune them,
 If you want the prompt to be grayed out when stale, you can do the following:
 
 #+begin_src elvish :tangle no
-  edit:prompt-stale-transform = { each [x]{ edit:styled $x[text] "gray" } }
+  edit:prompt-stale-transform = { each [x]{ styled $x[text] "gray" } }
 #+end_src
 
  The chains on both sides can be configured by assigning to =theme:chain:prompt-segments= and =theme:chain:rprompt-segments=, respectively. These variables must be arrays, and the given segments will be automatically linked by =$theme:chain:glyph[chain]=. Their default values are:
@@ -79,7 +79,7 @@ If you want the prompt to be grayed out when stale, you can do the following:
 Each element can be any of the following:
 
 - The name of one of the built-in segments. Available segments: =arrow=, =timestamp=, =su=, =dir=, =session= (a glyph with a unique color for the current session, based on its PID), =git-branch=, =git-dirty=, =git-untracked=, =git-deleted=, =git-ahead=, =git-behind=, =git-staged=, =git-combined= (which combines in a single segment all the other git status indicators);
-- A string or the output of [[https://elvish.io/ref/edit.html#editstyled][edit:styled]], which will be displayed as-is;
+- A string or the output of [[https://elvish.io/ref/edit.html#editstyled][styled]], which will be displayed as-is;
 - A lambda, which will be called and its output displayed;
 - The output of a call to =chain:segment <style> <strings>=, which returns a "proper" segment, enclosed in square brackets and styled as requested.
 
@@ -87,7 +87,7 @@ You can customize the glyphs and styles used for the different segments by assig
 
 The value assigned to an element of =chain:segment-style= can be:
 
-- Any valid argument to [[https://elvish.io/ref/edit.html#editstyled][edit:styled]].
+- Any valid argument to [[https://elvish.io/ref/edit.html#editstyled][styled]].
 - The string =default= to indicate no special color (this will show in your regular terminal text color).
 - The string =session= to produce a color based on the current process ID, which can be used to indicate a unique color for the current session. This is used by the =session= segment, but can be assigned to any segment.
 
@@ -149,17 +149,17 @@ Set up the default values for the glyphs used in the different chains. Note that
   ]
 #+end_src
 
-Styling for each built-in segment. The value must be a valid argument to =[[https://elvish.io/ref/edit.html#editstyled][edit:styled]]=.
+Styling for each built-in segment. The value must be a valid argument to =[[https://elvish.io/ref/edit.html#editstyled][styled]]=.
 
 #+begin_src elvish
   default-segment-style = [
     &git-branch=    blue
     &git-dirty=     yellow
-    &git-ahead=     "38;5;52"
-    &git-behind=    "38;5;52"
-    &git-staged=    "38;5;22"
-    &git-untracked= "38;5;52"
-    &git-deleted=   "38;5;52"
+    &git-ahead=     red
+    &git-behind=    red
+    &git-staged=    green
+    &git-untracked= red
+    &git-deleted=   red
     &git-combined=  default
     &su=            yellow
     &chain=         default
@@ -207,22 +207,23 @@ Function to choose a color based on the current value of =$pid=, as an indicator
 
 #+begin_src elvish
   fn -session-color {
-    + (% $pid 216) 16
+    valid-colors = [ black red green yellow blue magenta cyan lightgray gray lightred lightgreen lightyellow lightblue lightmagenta lightcyan white ]
+    put $valid-colors[(% $pid (count $valid-colors))]
   }
 #+end_src
 
 Internal function to return a styled string, or plain if =color= is "default". If =$color= is "session", then a unique color is chosen for the current session using the =-session-color= function.
 
 #+begin_src elvish
-  fn -colorized [what color]{
-    if (!=s $color default) {
-      if (eq $color session) {
-        color = "38;5;"(-session-color)
+  fn -colorized [what @color]{
+    if (and (not-eq $color [default]) (not-eq $color [])) {
+      if (eq $color [session]) {
+        color = [(-session-color)]
       }
       if $bold-prompt {
-        color = $color";bold"
+        color = [ $@color bold ]
       }
-      edit:styled $what $color
+      styled $what $@color
     } else {
       put $what
     }
@@ -259,7 +260,7 @@ The =-colorized-glyph= returns the glyph for the given segment, with its corresp
   }
 #+end_src
 
-Build a prompt segment in the given style, surrounded by square brackets. The first argument can be a style argument understood by =edit:styled=, or the name of one of the predefined segments. In the latter case, the style is taken from the =$segment-style= map, and if a glyph for that segment name exists in the =$glyph= map, it is automatically prepended to the given text.
+Build a prompt segment in the given style, surrounded by square brackets. The first argument can be a style argument understood by =styled=, or the name of one of the predefined segments. In the latter case, the style is taken from the =$segment-style= map, and if a glyph for that segment name exists in the =$glyph= map, it is automatically prepended to the given text.
 
 #+begin_src elvish
   fn prompt-segment [segment-or-style @texts]{
@@ -453,7 +454,7 @@ This segment prints the separator between the other chains and the cursor.
 
 ** Chain- and prompt-building functions
 
-Given a segment specification, return the appropriate value, depending on whether it's the name of a built-in segment, a lambda, a string or an edit:styled
+Given a segment specification, return the appropriate value, depending on whether it's the name of a built-in segment, a lambda, a string or a =styled= object.
 
 #+begin_src elvish
   fn -interpret-segment [seg]{
@@ -469,14 +470,14 @@ Given a segment specification, return the appropriate value, depending on whethe
         # If it's any other string, return it as-is
         put $seg
       }
-    } elif (eq $k 'styled') {
-      # If it's an edit:styled, return it as-is
+    } elif (or (eq $k 'styled') (eq $k 'styled-text')) {
+      # If it's a styled object, return it as-is
       put $seg
     }
   }
 #+end_src
 
-Given a list of segments (which can be built-in segment names, lambdas, strings or ~edit:styled~ objects), return the appropriate chain, including the chain connectors.
+Given a list of segments (which can be built-in segment names, lambdas, strings or ~styled~ objects), return the appropriate chain, including the chain connectors.
 
 #+begin_src elvish
   fn -build-chain [segments]{
@@ -546,10 +547,10 @@ We call the =init= function automatically on module load.
       -parse-git
       status = [($segment[git-combined])]
       if (eq $status []) {
-        status = [(-colorized "[" session) (edit:styled OK green) (-colorized "]" session)]
+        status = [(-colorized "[" session) (styled OK green) (-colorized "]" session)]
       }
       status = [$@status ($segment[git-branch])]
-      echo $@status (edit:styled (tilde-abbr $r) blue)
+      echo $@status (styled (tilde-abbr $r) blue)
     }
     cd $prev
   }

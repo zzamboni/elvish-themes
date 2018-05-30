@@ -30,11 +30,11 @@ default-glyph = [
 default-segment-style = [
   &git-branch=    blue
   &git-dirty=     yellow
-  &git-ahead=     "38;5;52"
-  &git-behind=    "38;5;52"
-  &git-staged=    "38;5;22"
-  &git-untracked= "38;5;52"
-  &git-deleted=   "38;5;52"
+  &git-ahead=     red
+  &git-behind=    red
+  &git-staged=    green
+  &git-untracked= red
+  &git-deleted=   red
   &git-combined=  default
   &su=            yellow
   &chain=         default
@@ -56,18 +56,19 @@ root-id = 0
 bold-prompt = $false
 
 fn -session-color {
-  + (% $pid 216) 16
+  valid-colors = [ black red green yellow blue magenta cyan lightgray gray lightred lightgreen lightyellow lightblue lightmagenta lightcyan white ]
+  put $valid-colors[(% $pid (count $valid-colors))]
 }
 
-fn -colorized [what color]{
-  if (!=s $color default) {
-    if (eq $color session) {
-      color = "38;5;"(-session-color)
+fn -colorized [what @color]{
+  if (and (not-eq $color [default]) (not-eq $color [])) {
+    if (eq $color [session]) {
+      color = [(-session-color)]
     }
     if $bold-prompt {
-      color = $color";bold"
+      color = [ $@color bold ]
     }
-    edit:styled $what $color
+    styled $what $@color
   } else {
     put $what
   }
@@ -212,8 +213,8 @@ fn -interpret-segment [seg]{
       # If it's any other string, return it as-is
       put $seg
     }
-  } elif (eq $k 'styled') {
-    # If it's an edit:styled, return it as-is
+  } elif (or (eq $k 'styled') (eq $k 'styled-text')) {
+    # If it's a styled object, return it as-is
     put $seg
   }
 }
@@ -265,10 +266,10 @@ fn summary-status {
     -parse-git
     status = [($segment[git-combined])]
     if (eq $status []) {
-      status = [(-colorized "[" session) (edit:styled OK green) (-colorized "]" session)]
+      status = [(-colorized "[" session) (styled OK green) (-colorized "]" session)]
     }
     status = [$@status ($segment[git-branch])]
-    echo $@status (edit:styled (tilde-abbr $r) blue)
+    echo $@status (styled (tilde-abbr $r) blue)
   }
   cd $prev
 }
