@@ -153,20 +153,20 @@ Styling for each built-in segment. The value must be a valid argument to =[[http
 
 #+begin_src elvish
   default-segment-style = [
-    &git-branch=    blue
-    &git-dirty=     yellow
-    &git-ahead=     red
-    &git-behind=    red
-    &git-staged=    green
-    &git-untracked= red
-    &git-deleted=   red
-    &git-combined=  default
-    &su=            yellow
-    &chain=         default
-    &arrow=         green
-    &dir=           cyan
-    &session=       session
-    &timestamp=     gray
+    &git-branch=    [ blue    ]
+    &git-dirty=     [ yellow  ]
+    &git-ahead=     [ red     ]
+    &git-behind=    [ red     ]
+    &git-staged=    [ green   ]
+    &git-untracked= [ red     ]
+    &git-deleted=   [ red     ]
+    &git-combined=  [ default ]
+    &su=            [ yellow  ]
+    &chain=         [ default ]
+    &arrow=         [ green   ]
+    &dir=           [ cyan    ]
+    &session=       [ session ]
+    &timestamp=     [ gray    ]
   ]
 #+end_src
 
@@ -216,6 +216,9 @@ Internal function to return a styled string, or plain if =color= is "default". I
 
 #+begin_src elvish
   fn -colorized [what @color]{
+    if (and (not-eq $color []) (eq (kind-of $color[0]) list)) {
+      color = [(explode $color[0])]
+    }
     if (and (not-eq $color [default]) (not-eq $color [])) {
       if (eq $color [session]) {
         color = [(-session-color)]
