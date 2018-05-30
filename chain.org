@@ -534,23 +534,23 @@ We call the =init= function automatically on module load.
 
 ** Bonus useful functions
 
-=chain:summary-status= provides a summarized list of the =git-combined= indicators for the repositories specified in =$chain:summary-repos=.
+=chain:summary-status= provides a summarized list of the =git-combined= and =git-branch= indicators for the repositories specified in =$chain:summary-repos=.
 
 #+begin_src elvish
-summary-repos = []
+  summary-repos = []
 
-fn summary-status {
-  prev = $pwd
-  put $@summary-repos | each $echo~ | sort |
-  each [r]{
-    cd $r
-    -parse-git
-    status = [($segment[git-combined])]
-    if (eq $status []) {
-      status = [(-colorized "[" session) (edit:styled OK green) (-colorized "]" session)]
+  fn summary-status {
+    prev = $pwd
+    each $echo~ $summary-repos | sort | each [r]{
+      cd $r
+      -parse-git
+      status = [($segment[git-combined])]
+      if (eq $status []) {
+        status = [(-colorized "[" session) (edit:styled OK green) (-colorized "]" session)]
+      }
+      status = [$@status ($segment[git-branch])]
+      echo $@status (edit:styled (tilde-abbr $r) blue)
     }
-    echo $@status (edit:styled (tilde-abbr $r) blue)
+    cd $prev
   }
-  cd $prev
-}
 #+end_src

@@ -260,14 +260,14 @@ summary-repos = []
 
 fn summary-status {
   prev = $pwd
-  put $@summary-repos | each $echo~ | sort |
-  each [r]{
+  each $echo~ $summary-repos | sort | each [r]{
     cd $r
     -parse-git
     status = [($segment[git-combined])]
     if (eq $status []) {
       status = [(-colorized "[" session) (edit:styled OK green) (-colorized "]" session)]
     }
+    status = [$@status ($segment[git-branch])]
     echo $@status (edit:styled (tilde-abbr $r) blue)
   }
   cd $prev
