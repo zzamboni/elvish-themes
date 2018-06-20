@@ -36,6 +36,7 @@ default-segment-style = [
   &git-untracked= [ red     ]
   &git-deleted=   [ red     ]
   &git-combined=  [ default ]
+  &git-timestamp= [ cyan    ]
   &su=            [ yellow  ]
   &chain=         [ default ]
   &arrow=         [ green   ]
@@ -54,6 +55,8 @@ timestamp-format = "%R"
 root-id = 0
 
 bold-prompt = $false
+
+git-get-timestamp = { git log -1 --date=short --pretty=format:%cd }
 
 fn -session-color {
   valid-colors = [ black red green yellow blue magenta cyan lightgray gray lightred lightgreen lightyellow lightblue lightmagenta lightcyan white ]
@@ -132,6 +135,11 @@ segment[git-branch] = {
     }
     prompt-segment git-branch $branch
   }
+}
+
+segment[git-timestamp] = {
+  ts = ($git-get-timestamp)
+  prompt-segment git-timestamp $ts
 }
 
 fn -show-git-indicator [segment]{
@@ -271,7 +279,7 @@ fn summary-status {
     if (eq $status []) {
       status = [(-colorized "[" session) (styled OK green) (-colorized "]" session)]
     }
-    status = [$@status ($segment[git-branch])]
+    status = [$@status ($segment[git-branch]) ($segment[git-timestamp])]
     echo $@status (styled (tilde-abbr $r) blue)
   }
   cd $prev

@@ -78,7 +78,7 @@ If you want the prompt to be grayed out when stale, you can do the following:
 
 Each element can be any of the following:
 
-- The name of one of the built-in segments. Available segments: =arrow=, =timestamp=, =su=, =dir=, =session= (a glyph with a unique color for the current session, based on its PID), =git-branch=, =git-dirty=, =git-untracked=, =git-deleted=, =git-ahead=, =git-behind=, =git-staged=, =git-combined= (which combines in a single segment all the other git status indicators);
+- The name of one of the built-in segments. Available segments: =arrow=, =timestamp=, =su=, =dir=, =session= (a glyph with a unique color for the current session, based on its PID), =git-branch=, =git-dirty=, =git-untracked=, =git-deleted=, =git-ahead=, =git-behind=, =git-staged=, =git-combined= (which combines in a single segment all the other git status indicators), =git-timestamp= (timestamp of the last git commit);
 - A string or the output of [[https://elvish.io/ref/edit.html#editstyled][styled]], which will be displayed as-is;
 - A lambda, which will be called and its output displayed;
 - The output of a call to =chain:segment <style> <strings>=, which returns a "proper" segment, enclosed in square brackets and styled as requested.
@@ -91,22 +91,15 @@ The value assigned to an element of =chain:segment-style= can be:
 - The string =default= to indicate no special color (this will show in your regular terminal text color).
 - The string =session= to produce a color based on the current process ID, which can be used to indicate a unique color for the current session. This is used by the =session= segment, but can be assigned to any segment.
 
-The module also includes the =chain:summary-status= function, which provides a useful summary of some predetermined git repositories, using the =git-combined= segment. I use this to get a quick summary of the status of my most commonly-used repos.
+The module also includes the =chain:summary-status= function, which provides a useful summary of some predetermined git repositories, using the =git-combined=, =git-branch= and =git-timestamp= segments. I use this to get a quick summary of the status of my most commonly-used repos.
 
-#+begin_src elvish :use github.com/zzamboni/elvish-themes/chain :tangle no :exports both
-chain:summary-repos = [ ~/.elvish ~/.emacs.d ~/.hammerspoon]
-chain:summary-status
+#+begin_src elvish :tangle no
+[~]─> chain:summary-repos = [ ~/.elvish ~/.emacs.d ~/.hammerspoon]
+[~]─> chain:summary-status
+[ ✎ ] [⎇ master] [2018-06-19] ~/.elvish
+[ OK ] [⎇ master] [2018-06-13] ~/.emacs.d
+[ OK ] [⎇ master] [2018-04-30] ~/.hammerspoon
 #+end_src
-
-#+RESULTS:
-: Exception: [31;1mnew variables can only be created in local scope[m
-: Traceback:
-:   /Users/taazadi1/.elvish/lib/github.com/zzamboni/elvish-themes/chain.elv, line 253:
-:       [1;4medit:prompt[m = $prompt~
-:   /Users/taazadi1/.elvish/lib/github.com/zzamboni/elvish-themes/chain.elv, line 257:
-:     [1;4minit[m
-:   /Users/taazadi1/.elvish/lib/github.com/zzamboni/elvish-themes/elvish-nNRmiG, line 1:
-:     [1;4muse github.com/zzamboni/elvish-themes/chain[m
 
 * Implementation
 
@@ -161,6 +154,7 @@ Styling for each built-in segment. The value must be a valid argument to =[[http
     &git-untracked= [ red     ]
     &git-deleted=   [ red     ]
     &git-combined=  [ default ]
+    &git-timestamp= [ cyan    ]
     &su=            [ yellow  ]
     &chain=         [ default ]
     &arrow=         [ green   ]
@@ -199,6 +193,12 @@ Whether the prompt should be bold.
 
 #+begin_src elvish
   bold-prompt = $false
+#+end_src
+
+The =git-get-timestamp= function gets executed to produce the text to be displayed in the =git-timestamp= module. You can change it if you want to change the format of what gets displayed.
+
+#+begin_src elvish
+  git-get-timestamp = { git log -1 --date=short --pretty=format:%cd }
 #+end_src
 
 ** General utility functions
@@ -327,6 +327,15 @@ The =git-branch= segment indicates the current branch name. If we are in a detac
       }
       prompt-segment git-branch $branch
     }
+  }
+#+end_src
+
+The =git-timestamp= segment shows the last-commit timestamp from the current branch.
+
+#+begin_src elvish
+  segment[git-timestamp] = {
+    ts = ($git-get-timestamp)
+    prompt-segment git-timestamp $ts
   }
 #+end_src
 
@@ -552,7 +561,7 @@ We call the =init= function automatically on module load.
       if (eq $status []) {
         status = [(-colorized "[" session) (styled OK green) (-colorized "]" session)]
       }
-      status = [$@status ($segment[git-branch])]
+      status = [$@status ($segment[git-branch]) ($segment[git-timestamp])]
       echo $@status (styled (tilde-abbr $r) blue)
     }
     cd $prev
