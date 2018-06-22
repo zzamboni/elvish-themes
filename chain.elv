@@ -15,7 +15,7 @@ rprompt-segments = $rprompt-segments-defaults
 
 default-glyph = [
   &git-branch=    "⎇"
-  &git-dirty=     "✎ "
+  &git-dirty=     "●"
   &git-ahead=     "⬆"
   &git-behind=    "⬇"
   &git-staged=    "✔"
@@ -23,7 +23,7 @@ default-glyph = [
   &git-deleted=   "-"
   &su=            "⚡"
   &chain=         "─"
-  &session=       "●"
+  &session=       "▪"
   &arrow=         ">"
 ]
 
@@ -279,8 +279,8 @@ fn summary-status {
     if (eq $status []) {
       status = [(-colorized "[" session) (styled OK green) (-colorized "]" session)]
     }
-    status = [$@status ($segment[git-branch]) ($segment[git-timestamp])]
-    echo $@status (styled (tilde-abbr $r) blue)
+    status = [$@status ' ' ($segment[git-branch]) ' ' ($segment[git-timestamp])]
+    echo &sep="" $@status ' ' (styled (tilde-abbr $r) blue)
   }
   cd $prev
 }

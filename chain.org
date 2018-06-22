@@ -129,7 +129,7 @@ Set up the default values for the glyphs used in the different chains. Note that
 #+begin_src elvish
   default-glyph = [
     &git-branch=    "⎇"
-    &git-dirty=     "✎ "
+    &git-dirty=     "●"
     &git-ahead=     "⬆"
     &git-behind=    "⬇"
     &git-staged=    "✔"
@@ -137,7 +137,7 @@ Set up the default values for the glyphs used in the different chains. Note that
     &git-deleted=   "-"
     &su=            "⚡"
     &chain=         "─"
-    &session=       "●"
+    &session=       "▪"
     &arrow=         ">"
   ]
 #+end_src
@@ -561,8 +561,8 @@ We call the =init= function automatically on module load.
       if (eq $status []) {
         status = [(-colorized "[" session) (styled OK green) (-colorized "]" session)]
       }
-      status = [$@status ($segment[git-branch]) ($segment[git-timestamp])]
-      echo $@status (styled (tilde-abbr $r) blue)
+      status = [$@status ' ' ($segment[git-branch]) ' ' ($segment[git-timestamp])]
+      echo &sep="" $@status ' ' (styled (tilde-abbr $r) blue)
     }
     cd $prev
   }
