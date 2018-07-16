@@ -500,7 +500,7 @@ Given a list of segments (which can be built-in segment names, lambdas, strings 
     output = ""
     -parse-git
     for seg $segments {
-      time = (-time { output = [(-interpret-segment $seg)] })
+      output = [(-interpret-segment $seg)]
       if (> (count $output) 0) {
         if (not $first) {
           -colorized-glyph chain
@@ -517,13 +517,13 @@ Finally, we get to the functions that build the left and right prompts, respecti
 #+begin_src elvish
   fn prompt {
     if (not-eq $prompt-segments []) {
-      put (-build-chain $prompt-segments)
+      -build-chain $prompt-segments
     }
   }
 
   fn rprompt {
     if (not-eq $rprompt-segments []) {
-      put (-build-chain $rprompt-segments)
+      -build-chain $rprompt-segments
     }
   }
 #+end_src

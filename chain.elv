@@ -238,7 +238,7 @@ fn -build-chain [segments]{
   output = ""
   -parse-git
   for seg $segments {
-    time = (-time { output = [(-interpret-segment $seg)] })
+    output = [(-interpret-segment $seg)]
     if (> (count $output) 0) {
       if (not $first) {
         -colorized-glyph chain
@@ -251,13 +251,13 @@ fn -build-chain [segments]{
 
 fn prompt {
   if (not-eq $prompt-segments []) {
-    put (-build-chain $prompt-segments)
+    -build-chain $prompt-segments
   }
 }
 
 fn rprompt {
   if (not-eq $rprompt-segments []) {
-    put (-build-chain $rprompt-segments)
+    -build-chain $rprompt-segments
   }
 }
 
