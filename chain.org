@@ -69,7 +69,7 @@ If you want the prompt to be grayed out when stale, you can do the following:
   edit:prompt-stale-transform = { each [x]{ styled $x[text] "gray" } }
 #+end_src
 
- The chains on both sides can be configured by assigning to =theme:chain:prompt-segments= and =theme:chain:rprompt-segments=, respectively. These variables must be arrays, and the given segments will be automatically linked by =$theme:chain:glyph[chain]=. Their default values are:
+The chains on both sides can be configured by assigning to =theme:chain:prompt-segments= and =theme:chain:rprompt-segments=, respectively. These variables must be arrays, and the given segments will be automatically linked by =$theme:chain:glyph[chain]=. Their default values are:
 
 #+begin_src elvish
   prompt-segments-defaults = [ su dir git-branch git-combined arrow ]
@@ -94,11 +94,11 @@ The value assigned to an element of =chain:segment-style= can be:
 The module also includes the =chain:summary-status= function, which provides a useful summary of some predetermined git repositories, using the =git-combined=, =git-branch= and =git-timestamp= segments. I use this to get a quick summary of the status of my most commonly-used repos.
 
 #+begin_src elvish :tangle no
-[~]─> chain:summary-repos = [ ~/.elvish ~/.emacs.d ~/.hammerspoon]
-[~]─> chain:summary-status
-[ ✎ ] [⎇ master] [2018-06-19] ~/.elvish
-[ OK ] [⎇ master] [2018-06-13] ~/.emacs.d
-[ OK ] [⎇ master] [2018-04-30] ~/.hammerspoon
+  [~]─> chain:summary-repos = [ ~/.elvish ~/.emacs.d ~/.hammerspoon]
+  [~]─> chain:summary-status
+  [ ✎ ] [⎇ master] [2018-06-19] ~/.elvish
+  [ OK ] [⎇ master] [2018-06-13] ~/.emacs.d
+  [ OK ] [⎇ master] [2018-04-30] ~/.hammerspoon
 #+end_src
 
 * Implementation
