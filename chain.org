@@ -563,7 +563,7 @@ We call the =init= function automatically on module load.
       }
       status = [$@status ' ' ($segment[git-branch]) ' ' ($segment[git-timestamp])]
       echo &sep="" $@status ' ' (styled (tilde-abbr $r) blue)
-    }
+    } | sort -r +2 -3
     cd $prev
   }
 #+end_src

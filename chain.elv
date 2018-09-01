@@ -281,6 +281,6 @@ fn summary-status {
     }
     status = [$@status ' ' ($segment[git-branch]) ' ' ($segment[git-timestamp])]
     echo &sep="" $@status ' ' (styled (tilde-abbr $r) blue)
-  }
+  } | sort -r +2 -3
   cd $prev
 }
