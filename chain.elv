@@ -270,17 +270,18 @@ init
 
 summary-repos = []
 
-fn summary-status {
+fn summary-status [@repos]{
   prev = $pwd
-  each $echo~ $summary-repos | sort | each [r]{
+  if (eq $repos []) { repos = $summary-repos }
+  each $echo~ $repos | sort | each [r]{
     cd $r
     -parse-git
     status = [($segment[git-combined])]
     if (eq $status []) {
       status = [(-colorized "[" session) (styled OK green) (-colorized "]" session)]
     }
-    status = [$@status ' ' ($segment[git-branch]) ' ' ($segment[git-timestamp])]
+    status = [($segment[git-timestamp]) ' ' $@status ' ' ($segment[git-branch])]
     echo &sep="" $@status ' ' (styled (tilde-abbr $r) blue)
-  } | sort -r +2 -3
+  } | sort -r -k 1
   cd $prev
 }
