@@ -274,14 +274,18 @@ fn summary-status [@repos]{
   prev = $pwd
   if (eq $repos []) { repos = $summary-repos }
   each $echo~ $repos | sort | each [r]{
-    cd $r
-    -parse-git
-    status = [($segment[git-combined])]
-    if (eq $status []) {
-      status = [(-colorized "[" session) (styled OK green) (-colorized "]" session)]
+    try {
+      cd $r
+      -parse-git
+      status = [($segment[git-combined])]
+      if (eq $status []) {
+        status = [(-colorized "[" session) (styled OK green) (-colorized "]" session)]
+      }
+      status = [($segment[git-timestamp]) ' ' $@status ' ' ($segment[git-branch])]
+      echo &sep="" $@status ' ' (styled (tilde-abbr $r) blue)
+    } except e {
+      echo (styled (to-string $e) red) (styled (tilde-abbr $r) red)
     }
-    status = [($segment[git-timestamp]) ' ' $@status ' ' ($segment[git-branch])]
-    echo &sep="" $@status ' ' (styled (tilde-abbr $r) blue)
   } | sort -r -k 1
   cd $prev
 }
