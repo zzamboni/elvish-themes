@@ -284,7 +284,7 @@ fn summary-status [@repos]{
       status = [($segment[git-timestamp]) ' ' $@status ' ' ($segment[git-branch])]
       echo &sep="" $@status ' ' (styled (tilde-abbr $r) blue)
     } except e {
-      echo (styled (to-string $e) red) (styled (tilde-abbr $r) red)
+      echo (styled '['(to-string $e)']' red) (styled (tilde-abbr $r) blue)
     }
   } | sort -r -k 1
   cd $prev
