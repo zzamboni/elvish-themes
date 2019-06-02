@@ -8,7 +8,7 @@ rprompt-segments-defaults = [ ]
 
 use re
 
-use github.com/muesli/elvish-libs/git
+use github.com/href/elvish-gitstatus/gitstatus
 
 prompt-segments = $prompt-segments-defaults
 rprompt-segments = $rprompt-segments-defaults
@@ -116,22 +116,15 @@ segment = [&]
 
 last-status = [&]
 
-fn -any-staged {
-  count [(each [k]{
-        explode $last-status[$k]
-  } [staged-modified staged-deleted staged-added renamed copied])]
-}
-
 fn -parse-git {
-  last-status = (git:status)
-  last-status[any-staged] = (-any-staged)
+  last-status = (gitstatus:query $pwd)
 }
 
 segment[git-branch] = {
-  branch = $last-status[branch-name]
-  if (not-eq $branch "") {
-    if (eq $branch '(detached)') {
-      branch = $last-status[branch-oid][0:7]
+  branch = $last-status[local-branch]
+  if (not-eq $branch $nil) {
+    if (eq $branch '') {
+      branch = $last-status[commit][0:7]
     }
     prompt-segment git-branch $branch
   }
@@ -144,16 +137,16 @@ segment[git-timestamp] = {
 
 fn -show-git-indicator [segment]{
   status-name = [
-    &git-dirty=  local-modified  &git-staged=    any-staged
-    &git-ahead=  rev-ahead       &git-untracked= untracked
-    &git-behind= rev-behind      &git-deleted=   local-deleted
+    &git-dirty=  unstaged        &git-staged=    staged
+    &git-ahead=  commits-ahead   &git-untracked= untracked
+    &git-behind= commits-behind  &git-deleted=   unstaged
   ]
   value = $last-status[$status-name[$segment]]
   # The indicator must show if the element is >0 or a non-empty list
   if (eq (kind-of $value) list) {
     not-eq $value []
   } else {
-    > $value 0
+    and (not-eq $value $nil) (> $value 0)
   }
 }
 
@@ -163,7 +156,8 @@ fn -git-prompt-segment [segment]{
   }
 }
 
--git-indicator-segments = [untracked deleted dirty staged ahead behind]
+#-git-indicator-segments = [untracked deleted dirty staged ahead behind]
+-git-indicator-segments = [untracked dirty staged ahead behind]
 
 each [ind]{
   segment[git-$ind] = { -git-prompt-segment git-$ind }

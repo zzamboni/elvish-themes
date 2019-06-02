@@ -115,10 +115,10 @@ Load the regular expression library.
   use re
 #+end_src
 
-We use [[https://github.com/muesli/elvish-libs/blob/master/git.elv][muesli's git library]] for the git functions.
+We use [[https://github.com/href/elvish-gitstatus][href's gitstatus]] library for the git functions.
 
 #+begin_src elvish
-  use github.com/muesli/elvish-libs/git
+  use github.com/href/elvish-gitstatus/gitstatus
 #+end_src
 
 Set up the default values for the chains (all can be configured by assigning to the appropriate variable):
@@ -301,22 +301,11 @@ We define a module-level variable which contains the latest git information. It 
   last-status = [&]
 #+end_src
 
-The =-any-staged= function indicates whether there are any staged changes (can be files added, deleted, modified, renamed or copied), and is used below to extend the results from =git:status=.
-
-#+begin_src elvish
-  fn -any-staged {
-    count [(each [k]{
-          explode $last-status[$k]
-    } [staged-modified staged-deleted staged-added renamed copied])]
-  }
-#+end_src
-
-The =-parse-git= function calls =git:status= to get the git status of the current directory. It extends the results with the result from =-any-staged= to have an easy indicator of staged files.
+The =-parse-git= function calls =gitstatus:query= to get the git status of the current directory. It extends the results with the result from =-any-staged= to have an easy indicator of staged files.
 
 #+begin_src elvish
   fn -parse-git {
-    last-status = (git:status)
-    last-status[any-staged] = (-any-staged)
+    last-status = (gitstatus:query $pwd)
   }
 #+end_src
 
@@ -324,10 +313,10 @@ The =git-branch= segment indicates the current branch name. If we are in a detac
 
 #+begin_src elvish
   segment[git-branch] = {
-    branch = $last-status[branch-name]
-    if (not-eq $branch "") {
-      if (eq $branch '(detached)') {
-        branch = $last-status[branch-oid][0:7]
+    branch = $last-status[local-branch]
+    if (not-eq $branch $nil) {
+      if (eq $branch '') {
+        branch = $last-status[commit][0:7]
       }
       prompt-segment git-branch $branch
     }
@@ -345,19 +334,21 @@ The =git-timestamp= segment shows the last-commit timestamp from the current bra
 
 The =-show-git-indicator= function takes a git segment name and returns whether it should be shown, depending on the information stored in =$last-status=. Since the git segment names do not correspond one-to-one with the elements of =$last-status=, we do here the mapping between them.
 
+(note that for now, =git-deleted= is the same as =git-dirty=, since =gitstatus= does not report deleted files separately, only as unstaged changes)
+
 #+begin_src elvish
   fn -show-git-indicator [segment]{
     status-name = [
-      &git-dirty=  local-modified  &git-staged=    any-staged
-      &git-ahead=  rev-ahead       &git-untracked= untracked
-      &git-behind= rev-behind      &git-deleted=   local-deleted
+      &git-dirty=  unstaged        &git-staged=    staged
+      &git-ahead=  commits-ahead   &git-untracked= untracked
+      &git-behind= commits-behind  &git-deleted=   unstaged
     ]
     value = $last-status[$status-name[$segment]]
     # The indicator must show if the element is >0 or a non-empty list
     if (eq (kind-of $value) list) {
       not-eq $value []
     } else {
-      > $value 0
+      and (not-eq $value $nil) (> $value 0)
     }
   }
 #+end_src
@@ -375,12 +366,15 @@ Generic function to display a git prompt segment.
 We support the following git indicator segments:
 
 #+begin_src elvish
-  -git-indicator-segments = [untracked deleted dirty staged ahead behind]
+  #-git-indicator-segments = [untracked deleted dirty staged ahead behind]
+  -git-indicator-segments = [untracked dirty staged ahead behind]
 #+end_src
 
 - The =git-dirty= segment indicates whether any files are "dirty" (modified locally).
 - The =git-ahead= and =git-behind= segments indicate whether the current repository is ahead or behind of the upstream remote, if any.
 - The =git-staged=, =git-untracked= and =git-deleted= segments indicate whether there are staged-but-uncommited, untracked or deleted-but-still-tracked files, respectively.
+
+(note that for now, =git-deleted= is the same as =git-dirty=, since =gitstatus= does not report deleted files separately, only as unstaged changes, so it's removed from the default list above)
 
 Using =-git-prompt-segment=, we define all these git segments.
 
