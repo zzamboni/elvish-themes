@@ -1,5 +1,5 @@
 {
     "description": "zzamboni's Elvish themes",
     "maintainers": ["Diego Zamboni <diego@zzamboni.org>"],
-    "dependencies": ["github.com/muesli/elvish-libs", "github.com/href/elvish-gitstatus"]
+    "dependencies": ["github.com/href/elvish-gitstatus"]
 }
