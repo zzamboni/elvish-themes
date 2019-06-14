@@ -57,19 +57,19 @@ If you want the prompt to be shown using bold fonts, set the following:
   chain:bold-prompt = $true
 #+end_src
 
-The default Elvish prompt settings work fine, but if you want to fine tune them, check the [[https://elvish.io/ref/edit.html#prompts][Prompts]] documentation. For example, if you want to keep the prompt from showing inverted when "stale" (this may happen if you use git segments and are in a large git repo), you could set the stale-prompt transformer to an identity function:
+The default Elvish prompt settings work fine, but if you want to fine tune them, check the [[https://elvish.io/ref/edit.html#prompts][Prompts]] documentation. For example, if you want to keep the prompt from appearing inverted when "stale" (this may happen if you use git segments and are in a large git repo), you could set =$edit:prompt-stale-transform= to an identity function:
 
 #+begin_src elvish :tangle no
   edit:prompt-stale-transform = $all~
 #+end_src
 
-If you want the prompt to be grayed out when stale, you can do the following:
+On the other hand, if you want the prompt to be grayed out when stale, you can do the following:
 
 #+begin_src elvish :tangle no
   edit:prompt-stale-transform = { each [x]{ styled $x[text] "gray" } }
 #+end_src
 
-The chains on both sides can be configured by assigning to =theme:chain:prompt-segments= and =theme:chain:rprompt-segments=, respectively. These variables must be arrays, and the given segments will be automatically linked by =$theme:chain:glyph[chain]=. Their default values are:
+The prompt chains on both sides can be configured by assigning to =theme:chain:prompt-segments= and =theme:chain:rprompt-segments=, respectively. These variables must be arrays, and the given segments will be automatically linked by =$theme:chain:glyph[chain]=. Their default values are:
 
 #+begin_src elvish
   prompt-segments-defaults = [ su dir git-branch git-combined arrow ]
@@ -78,7 +78,7 @@ The chains on both sides can be configured by assigning to =theme:chain:prompt-s
 
 Each element can be any of the following:
 
-- The name of one of the built-in segments. Available segments: =arrow=, =timestamp=, =su=, =dir=, =session= (a glyph with a unique color for the current session, based on its PID), =git-branch=, =git-dirty=, =git-untracked=, =git-deleted=, =git-ahead=, =git-behind=, =git-staged=, =git-combined= (which combines in a single segment all the other git status indicators), =git-timestamp= (timestamp of the last git commit);
+- The name of one of the built-in segments. Available segments: =arrow=, =timestamp=, =su=, =dir=, =session= (a glyph with a unique color for the current session, based on its PID), =git-branch=, =git-dirty=, =git-untracked=, =git-ahead=, =git-behind=, =git-staged=, =git-combined= (which combines in a single segment all the other git status indicators), =git-timestamp= (timestamp of the last git commit);
 - A string or the output of [[https://elvish.io/ref/edit.html#editstyled][styled]], which will be displayed as-is;
 - A lambda, which will be called and its output displayed;
 - The output of a call to =chain:segment <style> <strings>=, which returns a "proper" segment, enclosed in square brackets and styled as requested.
@@ -365,16 +365,16 @@ Generic function to display a git prompt segment.
 
 We support the following git indicator segments:
 
+(note that for now, =git-deleted= still exists but is the same as =git-dirty=, since =gitstatus= does not report deleted files separately, only as unstaged changes, so it's removed from the default list above)
+
 #+begin_src elvish
   #-git-indicator-segments = [untracked deleted dirty staged ahead behind]
   -git-indicator-segments = [untracked dirty staged ahead behind]
 #+end_src
 
-- The =git-dirty= segment indicates whether any files are "dirty" (modified locally).
+- The =git-dirty= segment indicates whether there are any local modifications (modified or deleted files).
 - The =git-ahead= and =git-behind= segments indicate whether the current repository is ahead or behind of the upstream remote, if any.
-- The =git-staged=, =git-untracked= and =git-deleted= segments indicate whether there are staged-but-uncommited, untracked or deleted-but-still-tracked files, respectively.
-
-(note that for now, =git-deleted= is the same as =git-dirty=, since =gitstatus= does not report deleted files separately, only as unstaged changes, so it's removed from the default list above)
+- The =git-staged=, =git-untracked= segments indicate whether there are staged-but-uncommited or untracked files, respectively.
 
 Using =-git-prompt-segment=, we define all these git segments.
 
