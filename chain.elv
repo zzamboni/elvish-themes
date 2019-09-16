@@ -264,8 +264,13 @@ init
 
 summary-repos = []
 
-fn summary-status [@repos]{
+fn summary-status [@repos &all=$false]{
   prev = $pwd
+  if $all {
+    repos = [(glocate --basename --existing .git | fgrep ~ | grep '\.git$' | each [l]{
+          re:replace '/\.git$' '' $l
+    })]
+  }
   if (eq $repos []) { repos = $summary-repos }
   each $echo~ $repos | sort | each [r]{
     try {
