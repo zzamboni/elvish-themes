@@ -59,7 +59,7 @@ bold-prompt = $false
 git-get-timestamp = { git log -1 --date=short --pretty=format:%cd }
 
 fn -session-color {
-  valid-colors = [ black red green yellow blue magenta cyan lightgray gray lightred lightgreen lightyellow lightblue lightmagenta lightcyan white ]
+  valid-colors = [ black red green yellow blue magenta cyan white bright-black bright-red bright-green bright-yellow bright-blue bright-magenta bright-cyan bright-white ]
   put $valid-colors[(% $pid (count $valid-colors))]
 }
 
