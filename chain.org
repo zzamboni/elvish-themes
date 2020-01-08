@@ -66,7 +66,7 @@ The default Elvish prompt settings work fine, but if you want to fine tune them,
 On the other hand, if you want the prompt to be grayed out when stale, you can do the following:
 
 #+begin_src elvish :tangle no
-  edit:prompt-stale-transform = { each [x]{ styled $x[text] "gray" } }
+  edit:prompt-stale-transform = { each [x]{ styled $x[text] "bright-black" } }
 #+end_src
 
 The prompt chains on both sides can be configured by assigning to =theme:chain:prompt-segments= and =theme:chain:rprompt-segments=, respectively. These variables must be arrays, and the given segments will be automatically linked by =$theme:chain:glyph[chain]=. Their default values are:
@@ -150,21 +150,21 @@ Styling for each built-in segment. The value must be a valid argument to =[[http
 
 #+begin_src elvish
   default-segment-style = [
-    &git-branch=    [ blue    ]
-    &git-dirty=     [ yellow  ]
-    &git-ahead=     [ red     ]
-    &git-behind=    [ red     ]
-    &git-staged=    [ green   ]
-    &git-untracked= [ red     ]
-    &git-deleted=   [ red     ]
-    &git-combined=  [ default ]
-    &git-timestamp= [ cyan    ]
-    &su=            [ yellow  ]
-    &chain=         [ default ]
-    &arrow=         [ green   ]
-    &dir=           [ cyan    ]
-    &session=       [ session ]
-    &timestamp=     [ gray    ]
+    &git-branch=    [ blue         ]
+    &git-dirty=     [ yellow       ]
+    &git-ahead=     [ red          ]
+    &git-behind=    [ red          ]
+    &git-staged=    [ green        ]
+    &git-untracked= [ red          ]
+    &git-deleted=   [ red          ]
+    &git-combined=  [ default      ]
+    &git-timestamp= [ cyan         ]
+    &su=            [ yellow       ]
+    &chain=         [ default      ]
+    &arrow=         [ green        ]
+    &dir=           [ cyan         ]
+    &session=       [ session      ]
+    &timestamp=     [ bright-black ]
   ]
 #+end_src
 
