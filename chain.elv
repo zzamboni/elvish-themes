@@ -58,6 +58,9 @@ bold-prompt = $false
 
 git-get-timestamp = { git log -1 --date=short --pretty=format:%cd }
 
+prompt-segment-delimiters = "[]"
+# prompt-segment-delimiters = [ "<<" ">>" ]
+
 fn -session-color {
   valid-colors = [ black red green yellow blue magenta cyan white bright-black bright-red bright-green bright-yellow bright-blue bright-magenta bright-cyan bright-white ]
   put $valid-colors[(% $pid (count $valid-colors))]
@@ -108,7 +111,7 @@ fn prompt-segment [segment-or-style @texts]{
   if (has-key $default-glyph $segment-or-style) {
     texts = [ (-glyph $segment-or-style) $@texts ]
   }
-  text = "["(joins ' ' $texts)"]"
+  text = $prompt-segment-delimiters[0](joins ' ' $texts)$prompt-segment-delimiters[1]
   -colorized $text $style
 }
 

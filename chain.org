@@ -105,6 +105,14 @@ The module also includes the =chain:summary-status= function, which provides a s
   [2018-09-01] [+●] [⎇ master] ~/.elvish/lib/github.com/zzamboni/elvish-themes
 #+end_src
 
+You can change the segment delimiters from the default square brackets by assigning a new value to =$chain:prompt-segment-delimiters=. Its value can be a two-character string (for single-character delimiters) or a two-element list (for multi-character or empty delimiters). Examples:
+
+#+begin_src elvish :tangle no
+  chain:prompt-segment-delimiters = "{}"          # {segment}
+  chain:prompt-segment-delimiters = "  "          #  segment
+  chain:prompt-segment-delimiters = [ "<<" ">>" ] # <<segment>>
+  chain:prompt-segment-delimiters = [ "" "" ]     # segment
+#+end_src
 * Implementation
 
 ** Base code and default values
@@ -205,6 +213,12 @@ The =git-get-timestamp= function gets executed to produce the text to be display
   git-get-timestamp = { git log -1 --date=short --pretty=format:%cd }
 #+end_src
 
+The =prompt-segment-delimiters= variable contains the "before" and "after" strings to be used in enclosing each prompt segment. By default each segment is enclosed in brackets. Note that for single-character delimiters you can use a two-character string like in the default value, but you could also use a list with two elements, in this case you can have multi-character delimiters, like in the commented-out example.
+
+#+begin_src elvish
+  prompt-segment-delimiters = "[]"
+  # prompt-segment-delimiters = [ "<<" ">>" ]
+#+end_src
 ** General utility functions
 
 Function to choose a color based on the current value of =$pid=, as an indicator of the current session.
@@ -278,7 +292,7 @@ Build a prompt segment in the given style, surrounded by square brackets. The fi
     if (has-key $default-glyph $segment-or-style) {
       texts = [ (-glyph $segment-or-style) $@texts ]
     }
-    text = "["(joins ' ' $texts)"]"
+    text = $prompt-segment-delimiters[0](joins ' ' $texts)$prompt-segment-delimiters[1]
     -colorized $text $style
   }
 #+end_src
