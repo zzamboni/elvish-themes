@@ -105,10 +105,10 @@ fn -colorized-glyph [segment-name @extra-text]{
 
 fn prompt-segment [segment-or-style @texts]{
   style = $segment-or-style
-  if (has-key $default-segment-style $segment-or-style) {
+  if (or (has-key $default-segment-style $segment-or-style) (has-key $segment-style $segment-or-style)) {
     style = (-segment-style $segment-or-style)
   }
-  if (has-key $default-glyph $segment-or-style) {
+  if (or (has-key $default-glyph $segment-or-style) (has-key $glyph $segment-or-style)) {
     texts = [ (-glyph $segment-or-style) $@texts ]
   }
   text = $prompt-segment-delimiters[0](joins ' ' $texts)$prompt-segment-delimiters[1]
@@ -224,6 +224,8 @@ fn -interpret-segment [seg]{
   } elif (or (eq $k 'styled') (eq $k 'styled-text')) {
     # If it's a styled object, return it as-is
     put $seg
+  } else {
+    fail "Invalid segment of type "(kind-of $seg)": "(to-string $seg)". Must be fn, string or styled."
   }
 }
 
