@@ -7,6 +7,7 @@ prompt-segments-defaults = [ su dir git-branch git-combined arrow ]
 rprompt-segments-defaults = [ ]
 
 use re
+use str
 
 use github.com/href/elvish-gitstatus/gitstatus
 
@@ -233,9 +234,14 @@ fn -build-chain [segments]{
   if (eq $segments []) {
     return
   }
+  for seg $segments {
+    if (str:has-prefix (to-string $seg) "git-") {
+      -parse-git
+      break
+    }
+  }
   first = $true
   output = ""
-  -parse-git
   for seg $segments {
     output = [(-interpret-segment $seg)]
     if (> (count $output) 0) {

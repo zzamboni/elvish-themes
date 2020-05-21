@@ -117,10 +117,11 @@ You can change the segment delimiters from the default square brackets by assign
 
 ** Base code and default values
 
-Load the regular expression library.
+Load the libraries we need.
 
 #+begin_src elvish
   use re
+  use str
 #+end_src
 
 We use [[https://github.com/href/elvish-gitstatus][href's gitstatus]] library for the git functions.
@@ -510,9 +511,14 @@ Given a list of segments (which can be built-in segment names, lambdas, strings 
     if (eq $segments []) {
       return
     }
+    for seg $segments {
+      if (str:has-prefix (to-string $seg) "git-") {
+        -parse-git
+        break
+      }
+    }
     first = $true
     output = ""
-    -parse-git
     for seg $segments {
       output = [(-interpret-segment $seg)]
       if (> (count $output) 0) {
