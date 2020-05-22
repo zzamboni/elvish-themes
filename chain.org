@@ -83,6 +83,13 @@ Each element can be any of the following:
 - A lambda, which will be called and its output displayed;
 - The output of a call to =chain:segment <style> <strings>=, which returns a "proper" segment, enclosed in square brackets and styled as requested.
 
+*Note:* using any of the =git-= segments will automatically start =gitstatusd= (using the [[https://github.com/href/elvish-gitstatus][github.com/href/gitstatus]] library) the first time a prompt is shown. *If you have git segments on both the left and right prompts*, this can lead to a race condition in which two copies of =gitstatusd= are started in parallel. To avoid this, you can manually start =gitstatusd= after loading the theme, as follows:
+
+#+begin_src elvish :tangle no
+  use github.com/zzamboni/elvish-themes/chain
+  chain:gitstatus:start
+#+end_src
+
 You can customize the glyphs and styles used for the different segments by assigning to the corresponding elements of =chain:glyph= and =chain:segment-style=, respectively.
 
 The value assigned to an element of =chain:segment-style= can be:
