@@ -120,8 +120,11 @@ segment = [&]
 
 last-status = [&]
 
-fn -parse-git {
+fn -parse-git [&with-timestamp=$false]{
   last-status = (gitstatus:query $pwd)
+  if $with-timestamp {
+    last-status[timestamp] = ($git-get-timestamp)
+  }
 }
 
 segment[git-branch] = {
@@ -135,7 +138,12 @@ segment[git-branch] = {
 }
 
 segment[git-timestamp] = {
-  ts = ($git-get-timestamp)
+  ts = $nil
+  if (has-key $last-status timestamp) {
+    ts = $last-status[timestamp]
+  } else {
+    ts = ($git-get-timestamp)
+  }
   prompt-segment git-timestamp $ts
 }
 
@@ -273,29 +281,111 @@ fn init {
 
 init
 
+find-all-user-repos = {
+  glocate --basename --existing .git | fgrep ~ | grep '\.git$' | each [l]{
+    re:replace '/\.git$' '' $l
+  }
+}
+
+summary-repos-file = ~/.elvish/package-data/elvish-themes/chain-summary-repos.json
+
 summary-repos = []
+
+fn -write-summary-repos {
+  mkdir -p (path-dir $summary-repos-file)
+  to-json [$summary-repos] > $summary-repos-file
+}
+
+fn -read-summary-repos {
+  try {
+    summary-repos = (from-json < $summary-repos-file)
+  } except {
+    summary-repos = []
+  }
+}
 
 fn summary-status [@repos &all=$false]{
   prev = $pwd
   if $all {
-    repos = [(glocate --basename --existing .git | fgrep ~ | grep '\.git$' | each [l]{
-          re:replace '/\.git$' '' $l
-    })]
+    repos = [($find-all-user-repos)]
   }
-  if (eq $repos []) { repos = $summary-repos }
-  each $echo~ $repos | sort | each [r]{
+  # Only sort the output in newer versions of Elvish (where the order function exists)
+  use builtin
+  order-cmd~ = $all~
+  if (has-key $builtin: order~) {
+    order-cmd~ = { order &less-than=[a b]{ <s $a[ts] $b[ts] } &reverse }
+  }
+  # Read repo list from disk in any case, cache in $chain:summary-repos
+  -read-summary-repos
+  # If repos is not given (or defined through &all) use $chain:summary-repos
+  if (eq $repos []) {
+    repos = $summary-repos
+  }
+  each [r]{
     try {
       cd $r
-      -parse-git
-      status = [($segment[git-combined])]
-      if (eq $status []) {
-        status = [(-colorized "[" session) (styled OK green) (-colorized "]" session)]
-      }
-      status = [($segment[git-timestamp]) ' ' $@status ' ' ($segment[git-branch])]
-      echo &sep="" $@status ' ' (styled (tilde-abbr $r) blue)
+      -parse-git &with-timestamp
+      put [
+        &repo= (tilde-abbr $r)
+        &status= [($segment[git-combined])]
+        &ts= $last-status[timestamp]
+        &timestamp= ($segment[git-timestamp])
+        &branch= ($segment[git-branch])
+      ]
     } except e {
-      echo (styled '['(to-string $e)']' red) (styled (tilde-abbr $r) blue)
+      put [
+        &repo= (tilde-abbr $r)
+        &status= [(styled '['(to-string $e)']' red)]
+        &ts= ""
+        &timestamp= ""
+        &branch= ""
+      ]
     }
-  } | sort -r -k 1
+  } $repos |
+  order-cmd |
+  each [r]{
+    status = $r[status]
+    if (eq $status []) {
+        status = [(-colorized "[" session) (styled OK green) (-colorized "]" session)]
+    }
+    status = [$r[timestamp] ' ' $@status ' ' $r[branch]]
+    echo &sep="" $@status ' ' (styled $r[repo] blue)
+  }
   cd $prev
+}
+
+fn add-summary-repo [@dirs]{
+  if (eq $dirs []) {
+    dirs = [ $pwd ]
+  }
+  -read-summary-repos
+  each [d]{
+    if (has-value $summary-repos $d) {
+      echo (styled "Repo "$d" is already in the list" yellow)
+    } else {
+      summary-repos = [ $@summary-repos $d ]
+      echo (styled "Repo "$d" added to the list" green)
+    }
+  } $dirs
+  -write-summary-repos
+}
+
+fn remove-summary-repo [@dirs]{
+  if (eq $dirs []) {
+    dirs = [ $pwd ]
+  }
+  -read-summary-repos
+  @new-repos = (each [d]{
+      if (not (has-value $dirs $d)) { put $d }
+  } $summary-repos)
+  each [d]{
+    if (has-value $summary-repos $d) {
+      echo (styled "Repo "$d" removed from the list." green)
+    } else {
+      echo (styled "Repo "$d" was not on the list" yellow)
+    }
+  } $dirs
+
+  summary-repos = $new-repos
+  -write-summary-repos
 }

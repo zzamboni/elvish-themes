@@ -33,7 +33,7 @@ This file is written in [[http://www.howardism.org/Technical/Emacs/literate-prog
     - [[#arrow][arrow]]
   - [[#chain--and-prompt-building-functions][Chain- and prompt-building functions]]
   - [[#initialization][Initialization]]
-  - [[#bonus-useful-functions][Bonus useful functions]]
+  - [[#bonus-displaying-the-status-of-several-git-repos-at-once][Bonus: displaying the status of several git repos at once]]
 
 * Use
 
@@ -98,20 +98,6 @@ The value assigned to an element of =chain:segment-style= can be:
 - The string =default= to indicate no special color (this will show in your regular terminal text color).
 - The string =session= to produce a color based on the current process ID, which can be used to indicate a unique color for the current session. This is used by the =session= segment, but can be assigned to any segment.
 
-The module also includes the =chain:summary-status= function, which provides a status summary of git repositories, using the =git-combined=, =git-branch= and =git-timestamp= segments. The list is presented in reverse chronological order according to their latest git commit. I use this to get a quick summary of the status of my most commonly-used repos. You can store the default list of repositories in =$chain:summary-repos=, or simply pass them as arguments:
-
-#+begin_src elvish :tangle no
-  [~]─> chain:summary-repos = [ ~/.elvish ~/.emacs.d ~/.hammerspoon]
-  [~]─> chain:summary-status
-  [2019-04-30] [OK] [⎇ master] ~/.emacs.d
-  [2019-04-21] [OK] [⎇ master] ~/.hammerspoon
-  [2019-04-14] [OK] [⎇ master] ~/.elvish
-  [~]─> chain:summary-status ~/.elvish/lib/github.com/zzamboni/*
-  [2019-04-28] [OK] [⎇ master] ~/.elvish/lib/github.com/zzamboni/elvish-modules
-  [2019-03-26] [OK] [⎇ master] ~/.elvish/lib/github.com/zzamboni/elvish-completions
-  [2018-09-01] [+●] [⎇ master] ~/.elvish/lib/github.com/zzamboni/elvish-themes
-#+end_src
-
 You can change the segment delimiters from the default square brackets by assigning a new value to =$chain:prompt-segment-delimiters=. Its value can be a two-character string (for single-character delimiters) or a two-element list (for multi-character or empty delimiters). Examples:
 
 #+begin_src elvish :tangle no
@@ -120,6 +106,29 @@ You can change the segment delimiters from the default square brackets by assign
   chain:prompt-segment-delimiters = [ "<<" ">>" ] # <<segment>>
   chain:prompt-segment-delimiters = [ "" "" ]     # segment
 #+end_src
+
+This module also includes the =chain:summary-status= function, which provides a status summary of git repositories, using the =git-combined=, =git-branch= and =git-timestamp= segments. The list is presented in reverse chronological order according to their latest git commit (only if your version of Elvish supports the =order= builtin). I use this to get a quick summary of the status of my most commonly-used repos. You can add or remove directories to the list by using the =chain:add-summary-repo= and =chain:remove-summary-repo= functions. By default these functions add/remove the current directory, but you can also specify others. Example:
+
+#+begin_src elvish :tangle no
+  [~]─> cd ~/.elvish
+  [~/.elvish]─[⎇ master]─> chain:add-summary-repo
+  Repo /Users/taazadi1/.elvish added to the list
+  [~/.elvish]─[⎇ master]─> chain:add-summary-repo ~/.emacs.d ~/.hammerspoon
+  Repo /Users/taazadi1/.emacs.d added to the list
+  Repo /Users/taazadi1/.hammerspoon added to the list
+  [~/.elvish]─[⎇ master]─> chain:summary-status
+  [2020-05-25] [OK] [⎇ master] ~/.elvish
+  [2020-05-27] [OK] [⎇ master] ~/.emacs.d
+  [2020-05-22] [OK] [⎇ master] ~/.hammerspoon
+  [~/.elvish]─[⎇ master]─> chain:summary-status ~/.elvish/lib/github.com/zzamboni/*
+  [2020-05-09] [OK] [⎇ master] ~/.elvish/lib/github.com/zzamboni/elvish-completions
+  [2020-05-08] [OK] [⎇ master] ~/.elvish/lib/github.com/zzamboni/elvish-modules
+  [2020-05-22] [●] [⎇ master] ~/.elvish/lib/github.com/zzamboni/elvish-themes
+  [~/.elvish]─[⎇ master]─>
+#+end_src
+
+The list of directories is stored in =~/.elvish/package-data/elvish-themes/chain-summary-repos.json= (you can change the location if you want by setting the =$chain:summary-repos-file= variable).
+
 * Implementation
 
 ** Base code and default values
@@ -326,8 +335,11 @@ We define a module-level variable which contains the latest git information. It 
 The =-parse-git= function calls =gitstatus:query= to get the git status of the current directory. It extends the results with the result from =-any-staged= to have an easy indicator of staged files.
 
 #+begin_src elvish
-  fn -parse-git {
+  fn -parse-git [&with-timestamp=$false]{
     last-status = (gitstatus:query $pwd)
+    if $with-timestamp {
+      last-status[timestamp] = ($git-get-timestamp)
+    }
   }
 #+end_src
 
@@ -349,7 +361,12 @@ The =git-timestamp= segment shows the last-commit timestamp from the current bra
 
 #+begin_src elvish
   segment[git-timestamp] = {
-    ts = ($git-get-timestamp)
+    ts = $nil
+    if (has-key $last-status timestamp) {
+      ts = $last-status[timestamp]
+    } else {
+      ts = ($git-get-timestamp)
+    }
     prompt-segment git-timestamp $ts
   }
 #+end_src
@@ -572,35 +589,139 @@ We call the =init= function automatically on module load.
   init
 #+end_src
 
-** Bonus useful functions
+** Bonus: displaying the status of several git repos at once
 
-=chain:summary-status= provides a summarized list of the =git-combined= and =git-branch= indicators for the repositories specified in =$chain:summary-repos=.
+=chain:summary-status= provides a summarized list of the =git-combined= and =git-branch= indicators for a given set of repositories (I use this to check the status of repos on which I'm frequently working). The repositories to display can be provided in mutliple ways (if more than one is specified, the first one found is used):
+
+- As arguments to the function, e.g. =chain:summary-status dir1 dir2=.
+- All the git repos inside your home directory: =chain:summary-status &all=. Note: this uses the =glocate= command by default, can be changed by setting =$chain:find-all-user-repos=. Default value:
+  #+begin_src elvish
+    find-all-user-repos = {
+      glocate --basename --existing .git | fgrep ~ | grep '\.git$' | each [l]{
+        re:replace '/\.git$' '' $l
+      }
+    }
+  #+end_src
+- Read from a JSON file specified in =$chain:summary-repos-file=. Default value:
+  #+begin_src elvish
+    summary-repos-file = ~/.elvish/package-data/elvish-themes/chain-summary-repos.json
+  #+end_src
+  The contents of this file can be manipulated using the =chain:add-summary-repo= and =chain:remove-summary-repo=.
+
+The list of repositories read from the file is cached in =$chain:summary-repos=.
+  #+begin_src elvish
+    summary-repos = []
+  #+end_src
+
+We define a couple of functions to read and write =$chain:summary-repos= from disk.
 
 #+begin_src elvish
-  summary-repos = []
+  fn -write-summary-repos {
+    mkdir -p (path-dir $summary-repos-file)
+    to-json [$summary-repos] > $summary-repos-file
+  }
 
+  fn -read-summary-repos {
+    try {
+      summary-repos = (from-json < $summary-repos-file)
+    } except {
+      summary-repos = []
+    }
+  }
+#+end_src
+
+The =chain:summary-status= function is the main entry point to display the status of the configured repos.
+
+#+begin_src elvish
   fn summary-status [@repos &all=$false]{
     prev = $pwd
     if $all {
-      repos = [(glocate --basename --existing .git | fgrep ~ | grep '\.git$' | each [l]{
-            re:replace '/\.git$' '' $l
-      })]
+      repos = [($find-all-user-repos)]
     }
-    if (eq $repos []) { repos = $summary-repos }
-    each $echo~ $repos | sort | each [r]{
+    # Only sort the output in newer versions of Elvish (where the order function exists)
+    use builtin
+    order-cmd~ = $all~
+    if (has-key $builtin: order~) {
+      order-cmd~ = { order &less-than=[a b]{ <s $a[ts] $b[ts] } &reverse }
+    }
+    # Read repo list from disk in any case, cache in $chain:summary-repos
+    -read-summary-repos
+    # If repos is not given (or defined through &all) use $chain:summary-repos
+    if (eq $repos []) {
+      repos = $summary-repos
+    }
+    each [r]{
       try {
         cd $r
-        -parse-git
-        status = [($segment[git-combined])]
-        if (eq $status []) {
-          status = [(-colorized "[" session) (styled OK green) (-colorized "]" session)]
-        }
-        status = [($segment[git-timestamp]) ' ' $@status ' ' ($segment[git-branch])]
-        echo &sep="" $@status ' ' (styled (tilde-abbr $r) blue)
+        -parse-git &with-timestamp
+        put [
+          &repo= (tilde-abbr $r)
+          &status= [($segment[git-combined])]
+          &ts= $last-status[timestamp]
+          &timestamp= ($segment[git-timestamp])
+          &branch= ($segment[git-branch])
+        ]
       } except e {
-        echo (styled '['(to-string $e)']' red) (styled (tilde-abbr $r) blue)
+        put [
+          &repo= (tilde-abbr $r)
+          &status= [(styled '['(to-string $e)']' red)]
+          &ts= ""
+          &timestamp= ""
+          &branch= ""
+        ]
       }
-    } | sort -r -k 1
+    } $repos |
+    order-cmd |
+    each [r]{
+      status = $r[status]
+      if (eq $status []) {
+          status = [(-colorized "[" session) (styled OK green) (-colorized "]" session)]
+      }
+      status = [$r[timestamp] ' ' $@status ' ' $r[branch]]
+      echo &sep="" $@status ' ' (styled $r[repo] blue)
+    }
     cd $prev
+  }
+#+end_src
+
+The =chain:add-summary-repo= and =chain:remove-summary-repo= functions can be used to add/remove directories from the summary list. If no directories are given as arguments, they operate on the current directory.
+
+#+begin_src elvish
+  fn add-summary-repo [@dirs]{
+    if (eq $dirs []) {
+      dirs = [ $pwd ]
+    }
+    -read-summary-repos
+    each [d]{
+      if (has-value $summary-repos $d) {
+        echo (styled "Repo "$d" is already in the list" yellow)
+      } else {
+        summary-repos = [ $@summary-repos $d ]
+        echo (styled "Repo "$d" added to the list" green)
+      }
+    } $dirs
+    -write-summary-repos
+  }
+#+end_src
+
+#+begin_src elvish
+  fn remove-summary-repo [@dirs]{
+    if (eq $dirs []) {
+      dirs = [ $pwd ]
+    }
+    -read-summary-repos
+    @new-repos = (each [d]{
+        if (not (has-value $dirs $d)) { put $d }
+    } $summary-repos)
+    each [d]{
+      if (has-value $summary-repos $d) {
+        echo (styled "Repo "$d" removed from the list." green)
+      } else {
+        echo (styled "Repo "$d" was not on the list" yellow)
+      }
+    } $dirs
+
+    summary-repos = $new-repos
+    -write-summary-repos
   }
 #+end_src
