@@ -346,7 +346,7 @@ fn summary-status [@repos &all=$false]{
   each [r]{
     status = $r[status]
     if (eq $status []) {
-        status = [(-colorized "[" session) (styled OK green) (-colorized "]" session)]
+      status = [(-colorized "[" session) (styled OK green) (-colorized "]" session)]
     }
     status = [$r[timestamp] ' ' $@status ' ' $r[branch]]
     echo &sep="" $@status ' ' (styled $r[repo] blue)

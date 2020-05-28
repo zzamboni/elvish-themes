@@ -675,7 +675,7 @@ The =chain:summary-status= function is the main entry point to display the statu
     each [r]{
       status = $r[status]
       if (eq $status []) {
-          status = [(-colorized "[" session) (styled OK green) (-colorized "]" session)]
+        status = [(-colorized "[" session) (styled OK green) (-colorized "]" session)]
       }
       status = [$r[timestamp] ' ' $@status ' ' $r[branch]]
       echo &sep="" $@status ' ' (styled $r[repo] blue)
