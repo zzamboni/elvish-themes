@@ -38,6 +38,7 @@ default-segment-style = [
   &git-deleted=   [ red          ]
   &git-combined=  [ default      ]
   &git-timestamp= [ cyan         ]
+  &git-repo=      [ blue         ]
   &su=            [ yellow       ]
   &chain=         [ default      ]
   &arrow=         [ green        ]
@@ -304,30 +305,18 @@ fn -read-summary-repos {
   }
 }
 
-fn summary-status [@repos &all=$false]{
-  prev = $pwd
-  if $all {
-    repos = [($find-all-user-repos)]
-  }
-  # Only sort the output in newer versions of Elvish (where the order function exists)
-  use builtin
-  order-cmd~ = $all~
-  if (has-key $builtin: order~) {
-    order-cmd~ = { order &less-than=[a b]{ <s $a[ts] $b[ts] } &reverse }
-  }
-  # Read repo list from disk in any case, cache in $chain:summary-repos
-  -read-summary-repos
-  # If repos is not given (or defined through &all) use $chain:summary-repos
-  if (eq $repos []) {
-    repos = $summary-repos
-  }
+fn summary-data [repos]{
   each [r]{
     try {
       cd $r
       -parse-git &with-timestamp
+      status = [($segment[git-combined])]
+      if (eq $status []) {
+        status = [(-colorized "[" session) (styled OK green) (-colorized "]" session)]
+      }
       put [
         &repo= (tilde-abbr $r)
-        &status= [($segment[git-combined])]
+        &status= $status
         &ts= $last-status[timestamp]
         &timestamp= ($segment[git-timestamp])
         &branch= ($segment[git-branch])
@@ -341,15 +330,38 @@ fn summary-status [@repos &all=$false]{
         &branch= ""
       ]
     }
-  } $repos |
-  order-cmd |
-  each [r]{
-    status = $r[status]
-    if (eq $status []) {
-      status = [(-colorized "[" session) (styled OK green) (-colorized "]" session)]
-    }
-    status = [$r[timestamp] ' ' $@status ' ' $r[branch]]
-    echo &sep="" $@status ' ' (styled $r[repo] blue)
+  } $repos
+}
+
+fn summary-status [@repos &all=$false]{
+  prev = $pwd
+
+  # Determine how to sort the output. This only happens in newer
+  # versions of Elvish (where the order function exists)
+  use builtin
+  order-cmd~ = $all~
+  if (has-key $builtin: order~) {
+    order-cmd~ = { order &less-than=[a b]{ <s $a[ts] $b[ts] } &reverse }
+  }
+
+  # Read repo list from disk, cache in $chain:summary-repos
+  -read-summary-repos
+
+  # Determine the list of repos to display:
+  # 1) If the &all option is given, find them
+  if $all {
+    repos = [($find-all-user-repos)]
+  }
+  # 2) If repos is not given nor defined through &all, use $chain:summary-repos
+  if (eq $repos []) {
+    repos = $summary-repos
+  }
+  # 3) If repos is specified, just use it
+
+  # Produce the output
+  summary-data $repos | order-cmd | each [r]{
+    @status = $r[timestamp] ' ' (all $r[status]) ' ' $r[branch]
+    echo &sep="" $@status ' ' (-colorized $r[repo] (-segment-style git-repo))
   }
   cd $prev
 }
