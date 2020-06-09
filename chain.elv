@@ -58,6 +58,8 @@ root-id = 0
 
 bold-prompt = $false
 
+show-last-chain = $true
+
 git-get-timestamp = { git log -1 --date=short --pretty=format:%cd }
 
 prompt-segment-delimiters = "[]"
@@ -255,7 +257,9 @@ fn -build-chain [segments]{
     output = [(-interpret-segment $seg)]
     if (> (count $output) 0) {
       if (not $first) {
-        -colorized-glyph chain
+        if (or $show-last-chain (not-eq $seg $segments[-1])) {
+          -colorized-glyph chain
+        }
       }
       put $@output
       first = $false

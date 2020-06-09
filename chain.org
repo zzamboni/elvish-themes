@@ -107,6 +107,13 @@ You can change the segment delimiters from the default square brackets by assign
   chain:prompt-segment-delimiters = [ "" "" ]     # segment
 #+end_src
 
+By default, all segments are separated by the =chain= glyph. As a special case, you can specify whether the last segment should be separated by a chain or not by setting the =$chain:show-last-chain= variable to =$false=. This can be used to designate some special character in the =arrow= segment glyph (e.g. a Unicode arrow) and have it shown without a separator. For example:
+
+#+begin_src elvish :tangle no
+  chain:show-last-chain = $false
+  chain:glyph[arrow] = "→"
+#+end_src
+
 This module also includes the =chain:summary-status= function, which provides a status summary of git repositories, using the =git-combined=, =git-branch= and =git-timestamp= segments. The list is presented in reverse chronological order according to their latest git commit (only if your version of Elvish supports the =order= builtin). I use this to get a quick summary of the status of my most commonly-used repos. You can add or remove directories to the list by using the =chain:add-summary-repo= and =chain:remove-summary-repo= functions. By default these functions add/remove the current directory, but you can also specify others. Example:
 
 #+begin_src elvish :tangle no
@@ -223,6 +230,12 @@ Whether the prompt should be bold.
 
 #+begin_src elvish
   bold-prompt = $false
+#+end_src
+
+Whether the last segment should be separated by a chain or not. This can be used to designate some special character in the =arrow= segment and have it shown without a separator.
+
+#+begin_src elvish
+  show-last-chain = $true
 #+end_src
 
 The =git-get-timestamp= function gets executed to produce the text to be displayed in the =git-timestamp= module. You can change it if you want to change the format of what gets displayed.
@@ -548,7 +561,9 @@ Given a list of segments (which can be built-in segment names, lambdas, strings 
       output = [(-interpret-segment $seg)]
       if (> (count $output) 0) {
         if (not $first) {
-          -colorized-glyph chain
+          if (or $show-last-chain (not-eq $seg $segments[-1])) {
+            -colorized-glyph chain
+          }
         }
         put $@output
         first = $false
