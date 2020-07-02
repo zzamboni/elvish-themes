@@ -66,7 +66,7 @@ prompt-segment-delimiters = "[]"
 # prompt-segment-delimiters = [ "<<" ">>" ]
 
 fn -session-color {
-  valid-colors = [ black red green yellow blue magenta cyan white bright-black bright-red bright-green bright-yellow bright-blue bright-magenta bright-cyan bright-white ]
+  valid-colors = [ red green yellow blue magenta cyan white bright-black bright-red bright-green bright-yellow bright-blue bright-magenta bright-cyan bright-white ]
   put $valid-colors[(% $pid (count $valid-colors))]
 }
 
