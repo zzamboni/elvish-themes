@@ -72,7 +72,7 @@ fn -session-color {
 
 fn -colorized [what @color]{
   if (and (not-eq $color []) (eq (kind-of $color[0]) list)) {
-    color = [(explode $color[0])]
+    color = [(all $color[0])]
   }
   if (and (not-eq $color [default]) (not-eq $color [])) {
     if (eq $color [session]) {
