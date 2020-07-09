@@ -287,9 +287,7 @@ fn init {
 init
 
 find-all-user-repos = {
-  glocate --basename --existing .git | fgrep ~ | grep '\.git$' | each [l]{
-    re:replace '/\.git$' '' $l
-  }
+  fd -H -t d '^.git$' ~ | each $path-dir~
 }
 
 summary-repos-file = ~/.elvish/package-data/elvish-themes/chain-summary-repos.json

@@ -610,12 +610,10 @@ We call the =init= function automatically on module load.
 =chain:summary-status= provides a summarized list of the =git-combined= and =git-branch= indicators for a given set of repositories (I use this to check the status of repos on which I'm frequently working). The repositories to display can be provided in mutliple ways (if more than one is specified, the first one found is used):
 
 - As arguments to the function, e.g. =chain:summary-status dir1 dir2=.
-- All the git repos inside your home directory: =chain:summary-status &all=. Note: this uses the =glocate= command by default, can be changed by setting =$chain:find-all-user-repos=. Default value:
+- All the git repos inside your home directory: =chain:summary-status &all=. Note: this uses the =fd= command by default, can be changed by storing the new function in =$chain:find-all-user-repos=. Default value:
   #+begin_src elvish
     find-all-user-repos = {
-      glocate --basename --existing .git | fgrep ~ | grep '\.git$' | each [l]{
-        re:replace '/\.git$' '' $l
-      }
+      fd -H -t d '^.git$' ~ | each $path-dir~
     }
   #+end_src
 - Read from a JSON file specified in =$chain:summary-repos-file=. Default value:
