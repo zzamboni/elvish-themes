@@ -60,6 +60,8 @@ bold-prompt = $false
 
 show-last-chain = $true
 
+space-after-arrow = $true
+
 git-get-timestamp = { git log -1 --date=short --pretty=format:%cd }
 
 prompt-segment-delimiters = "[]"
@@ -217,7 +219,9 @@ segment[session] = {
 }
 
 segment[arrow] = {
-  -colorized-glyph arrow " "
+  end-text = ''
+  if $space-after-arrow { end-text = ' ' }
+  -colorized-glyph arrow $end-text
 }
 
 fn -interpret-segment [seg]{

@@ -114,6 +114,12 @@ By default, all segments are separated by the =chain= glyph. As a special case, 
   chain:glyph[arrow] = "→"
 #+end_src
 
+Also by default, a space is added after the =arrow= segment. You can supress this (for example, if the glyph you use for the =arrow= segment already includes sufficient spacing) by setting =$chain:space-after-arrow= to =$false=:
+
+#+begin_src elvish :tangle no
+  chain:space-after-arrow = $false
+#+end_src
+
 This module also includes the =chain:summary-status= function, which provides a status summary of git repositories, using the =git-combined=, =git-branch= and =git-timestamp= segments. The list is presented in reverse chronological order according to their latest git commit (only if your version of Elvish supports the =order= builtin). I use this to get a quick summary of the status of my most commonly-used repos. You can add or remove directories to the list by using the =chain:add-summary-repo= and =chain:remove-summary-repo= functions. By default these functions add/remove the current directory, but you can also specify others. Example:
 
 #+begin_src elvish :tangle no
@@ -236,6 +242,12 @@ Whether the last segment should be separated by a chain or not. This can be used
 
 #+begin_src elvish
   show-last-chain = $true
+#+end_src
+
+Whether a space should be added at the end of the arrow segment. Defaults to =$true=, but you may want to set it to =$false= depending on the characters you use for the arrow segment.
+
+#+begin_src elvish
+  space-after-arrow = $true
 #+end_src
 
 The =git-get-timestamp= function gets executed to produce the text to be displayed in the =git-timestamp= module. You can change it if you want to change the format of what gets displayed.
@@ -507,11 +519,13 @@ This segment prints a session indicator in a color unique to the current session
 
 *** arrow
 
-This segment prints the separator between the other chains and the cursor.
+This segment prints the separator between the other chains and the cursor. If =$chain:space-after-arrow= is =true= (its default value), a space is appended at the end.
 
 #+begin_src elvish
   segment[arrow] = {
-    -colorized-glyph arrow " "
+    end-text = ''
+    if $space-after-arrow { end-text = ' ' }
+    -colorized-glyph arrow $end-text
   }
 #+end_src
 
