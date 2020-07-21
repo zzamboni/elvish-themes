@@ -317,9 +317,6 @@ fn summary-data [repos]{
       cd $r
       -parse-git &with-timestamp
       status = [($segment[git-combined])]
-      if (eq $status []) {
-        status = [(-colorized "[" session) (styled OK green) (-colorized "]" session)]
-      }
       put [
         &repo= (tilde-abbr $r)
         &status= $status
@@ -339,7 +336,7 @@ fn summary-data [repos]{
   } $repos
 }
 
-fn summary-status [@repos &all=$false]{
+fn summary-status [@repos &all=$false &only-dirty=$false]{
   prev = $pwd
 
   # Determine how to sort the output. This only happens in newer
@@ -366,8 +363,14 @@ fn summary-status [@repos &all=$false]{
 
   # Produce the output
   summary-data $repos | order-cmd | each [r]{
-    @status = $r[timestamp] ' ' (all $r[status]) ' ' $r[branch]
-    echo &sep="" $@status ' ' (-colorized $r[repo] (-segment-style git-repo))
+    status-display = $r[status]
+    if (or (not $only-dirty) (not-eq $status-display [])) {
+      if (eq $status-display []) {
+        status-display = [(-colorized "[" session) (styled OK green) (-colorized "]" session)]
+      }
+      @status = $r[timestamp] ' ' (all $status-display) ' ' $r[branch]
+      echo &sep="" $@status ' ' (-colorized $r[repo] (-segment-style git-repo))
+    }
   }
   cd $prev
 }

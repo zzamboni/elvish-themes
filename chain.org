@@ -120,7 +120,19 @@ Also by default, a space is added after the =arrow= segment. You can supress thi
   chain:space-after-arrow = $false
 #+end_src
 
-This module also includes the =chain:summary-status= function, which provides a status summary of git repositories, using the =git-combined=, =git-branch= and =git-timestamp= segments. The list is presented in reverse chronological order according to their latest git commit (only if your version of Elvish supports the =order= builtin). I use this to get a quick summary of the status of my most commonly-used repos. You can add or remove directories to the list by using the =chain:add-summary-repo= and =chain:remove-summary-repo= functions. By default these functions add/remove the current directory, but you can also specify others. Example:
+This module also includes the =chain:summary-status= function, which provides a status summary of git repositories, using the =git-combined=, =git-branch= and =git-timestamp= segments. The list is presented in reverse chronological order according to their latest git commit (only if your version of Elvish supports the =order= builtin). I use this to get a quick summary of the status of my most commonly-used repos. The repositories to display can be provided in mutliple ways (if more than one is specified, the first one found is used):
+
+- Default behavior when no arguments nor options are given: read from a JSON file specified in =$chain:summary-repos-file= (default value: =~/.elvish/package-data/elvish-themes/chain-summary-repos.json=). The contents of this file can be manipulated using the =chain:add-summary-repo= and =chain:remove-summary-repo= functions (see example below).
+- As arguments to the function, e.g. =chain:summary-status dir1 dir2=.
+- All the git repos inside your home directory: =chain:summary-status &all=. Note: this uses the =fd= command by default, can be changed by storing the new function in =$chain:find-all-user-repos=. Default value:
+  #+begin_src elvish :tangle no
+    chain:find-all-user-repos = {
+      fd -H -t d '^.git$' ~ | each $path-dir~
+    }
+  #+end_src
+- In combination with any of the above, the =&only-dirty= option can be used to only display repositories which are not clean.
+
+You can add or remove directories to the list by using the =chain:add-summary-repo= and =chain:remove-summary-repo= functions. By default these functions add/remove the current directory, but you can also specify others. Example:
 
 #+begin_src elvish :tangle no
   [~]─> cd ~/.elvish
@@ -137,9 +149,12 @@ This module also includes the =chain:summary-status= function, which provides a 
   [2020-05-09] [OK] [⎇ master] ~/.elvish/lib/github.com/zzamboni/elvish-completions
   [2020-05-08] [OK] [⎇ master] ~/.elvish/lib/github.com/zzamboni/elvish-modules
   [2020-05-22] [●] [⎇ master] ~/.elvish/lib/github.com/zzamboni/elvish-themes
-  [~/.elvish]─[⎇ master]─>
+  [~/.elvish]─[⎇ master]─> chain:summary-status &only-dirty ~/.elvish/lib/github.com/zzamboni/*
+  [2020-05-22] [●] [⎇ master] ~/.elvish/lib/github.com/zzamboni/elvish-themes
 #+end_src
 
+The =chain:summary-status= function supports two options:
+- =&all= - if specified, uses
 The list of directories is stored in =~/.elvish/package-data/elvish-themes/chain-summary-repos.json= (you can change the location if you want by setting the =$chain:summary-repos-file= variable).
 
 * Implementation
@@ -667,9 +682,6 @@ The =chain:summary-data= function collects the data from a given set of reposito
         cd $r
         -parse-git &with-timestamp
         status = [($segment[git-combined])]
-        if (eq $status []) {
-          status = [(-colorized "[" session) (styled OK green) (-colorized "]" session)]
-        }
         put [
           &repo= (tilde-abbr $r)
           &status= $status
@@ -693,7 +705,7 @@ The =chain:summary-data= function collects the data from a given set of reposito
 The =chain:summary-status= function is the main entry point to display the status of the configured repos.
 
 #+begin_src elvish
-  fn summary-status [@repos &all=$false]{
+  fn summary-status [@repos &all=$false &only-dirty=$false]{
     prev = $pwd
 
     # Determine how to sort the output. This only happens in newer
@@ -720,8 +732,14 @@ The =chain:summary-status= function is the main entry point to display the statu
 
     # Produce the output
     summary-data $repos | order-cmd | each [r]{
-      @status = $r[timestamp] ' ' (all $r[status]) ' ' $r[branch]
-      echo &sep="" $@status ' ' (-colorized $r[repo] (-segment-style git-repo))
+      status-display = $r[status]
+      if (or (not $only-dirty) (not-eq $status-display [])) {
+        if (eq $status-display []) {
+          status-display = [(-colorized "[" session) (styled OK green) (-colorized "]" session)]
+        }
+        @status = $r[timestamp] ' ' (all $status-display) ' ' $r[branch]
+        echo &sep="" $@status ' ' (-colorized $r[repo] (-segment-style git-repo))
+      }
     }
     cd $prev
   }
