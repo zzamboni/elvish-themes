@@ -291,7 +291,7 @@ fn init {
 init
 
 find-all-user-repos = {
-  fd -H -t d '^.git$' ~ | each $path-dir~
+  fd -H -I -t d '^.git$' ~ | each $path-dir~
 }
 
 summary-repos-file = ~/.elvish/package-data/elvish-themes/chain-summary-repos.json

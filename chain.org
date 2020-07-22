@@ -127,7 +127,7 @@ This module also includes the =chain:summary-status= function, which provides a 
 - All the git repos inside your home directory: =chain:summary-status &all=. Note: this uses the =fd= command by default, can be changed by storing the new function in =$chain:find-all-user-repos=. Default value:
   #+begin_src elvish :tangle no
     chain:find-all-user-repos = {
-      fd -H -t d '^.git$' ~ | each $path-dir~
+      fd -H -I -t d '^.git$' ~ | each $path-dir~
     }
   #+end_src
 - In combination with any of the above, the =&only-dirty= option can be used to only display repositories which are not clean.
@@ -642,7 +642,7 @@ We call the =init= function automatically on module load.
 - All the git repos inside your home directory: =chain:summary-status &all=. Note: this uses the =fd= command by default, can be changed by storing the new function in =$chain:find-all-user-repos=. Default value:
   #+begin_src elvish
     find-all-user-repos = {
-      fd -H -t d '^.git$' ~ | each $path-dir~
+      fd -H -I -t d '^.git$' ~ | each $path-dir~
     }
   #+end_src
 - Read from a JSON file specified in =$chain:summary-repos-file=. Default value:
