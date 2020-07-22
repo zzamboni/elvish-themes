@@ -311,8 +311,23 @@ fn -read-summary-repos {
   }
 }
 
+summary-progress-indicator = $true
+summary-progress-steps = "⡀⡁⡂⡃⡄⡅⡆⡇⡈⡉⡊⡋⡌⡍⡎⡏⡐⡑⡒⡓⡔⡕⡖⡗⡘⡙⡚⡛⡜⡝⡞⡟⡠⡡⡢⡣⡤⡥⡦⡧⡨⡩⡪⡫⡬⡭⡮⡯⡰⡱⡲⡳⡴⡵⡶⡷⡸⡹⡺⡻⡼⡽⡾⡿⢀⢁⢂⢃⢄⢅⢆⢇⢈⢉⢊⢋⢌⢍⢎⢏⢐⢑⢒⢓⢔⢕⢖⢗⢘⢙⢚⢛⢜⢝⢞⢟⢠⢡⢢⢣⢤⢥⢦⢧⢨⢩⢪⢫⢬⢭⢮⢯⢰⢱⢲⢳⢴⢵⢶⢷⢸⢹⢺⢻⢼⢽⢾⢿⣀⣁⣂⣃⣄⣅⣆⣇⣈⣉⣊⣋⣌⣍⣎⣏⣐⣑⣒⣓⣔⣕⣖⣗⣘⣙⣚⣛⣜⣝⣞⣟⣠⣡⣢⣣⣤⣥⣦⣧⣨⣩⣪⣫⣬⣭⣮⣯⣰⣱⣲⣳⣴⣵⣶⣷⣸⣹⣺⣻⣼⣽⣾⣿"
+
+-progress-step = 0
+
+fn -init-progress-indicator { -progress-step = 0 }
+
+fn -advance-progress-indicator {
+  if $summary-progress-indicator {
+    print $summary-progress-steps[$-progress-step]"\r" >&2
+    -progress-step = (% (+ $-progress-step (count $summary-progress-steps[$-progress-step])) (count $summary-progress-steps))
+  }
+}
+
 fn summary-data [repos]{
   each [r]{
+    -advance-progress-indicator
     try {
       cd $r
       -parse-git &with-timestamp
@@ -339,6 +354,8 @@ fn summary-data [repos]{
 fn summary-status [@repos &all=$false &only-dirty=$false]{
   prev = $pwd
 
+  -init-progress-indicator
+
   # Determine how to sort the output. This only happens in newer
   # versions of Elvish (where the order function exists)
   use builtin
@@ -353,7 +370,7 @@ fn summary-status [@repos &all=$false &only-dirty=$false]{
   # Determine the list of repos to display:
   # 1) If the &all option is given, find them
   if $all {
-    repos = [($find-all-user-repos)]
+    repos = [($find-all-user-repos | each [r]{ put $r; -advance-progress-indicator })]
   }
   # 2) If repos is not given nor defined through &all, use $chain:summary-repos
   if (eq $repos []) {
