@@ -321,7 +321,11 @@ fn -init-progress-indicator { -progress-step = 0 }
 fn -advance-progress-indicator {
   if $summary-progress-indicator {
     print $summary-progress-steps[$-progress-step]"\r" >&2
-    -progress-step = (% (+ $-progress-step (count $summary-progress-steps[$-progress-step])) (count $summary-progress-steps))
+    inc = 1
+    if (eq (kind-of $summary-progress-steps string)) {
+      inc = (count $summary-progress-steps[$-progress-step])
+    }
+    -progress-step = (% (+ $-progress-step $inc) (count $summary-progress-steps))
   }
 }
 
