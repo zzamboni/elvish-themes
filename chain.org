@@ -21,6 +21,8 @@ This file is written in [[http://www.howardism.org/Technical/Emacs/literate-prog
 
 * Table of Contents                                          :TOC_3:noexport:
 - [[#use][Use]]
+  - [[#prompt-theme-configuration][Prompt theme configuration]]
+  - [[#git-repo-summary-display][Git repo summary display]]
 - [[#implementation][Implementation]]
   - [[#base-code-and-default-values][Base code and default values]]
   - [[#general-utility-functions][General utility functions]]
@@ -50,6 +52,8 @@ Add the following to you =~/.elvish/rc.elv= file to load and configure the theme
 #+begin_src elvish :tangle no
   use github.com/zzamboni/elvish-themes/chain
 #+end_src
+
+** Prompt theme configuration
 
 If you want the prompt to be shown using bold fonts, set the following:
 
@@ -119,6 +123,8 @@ Also by default, a space is added after the =arrow= segment. You can supress thi
 #+begin_src elvish :tangle no
   chain:space-after-arrow = $false
 #+end_src
+
+** Git repo summary display
 
 This module also includes the =chain:summary-status= function, which provides a status summary of git repositories, using the =git-combined=, =git-branch= and =git-timestamp= segments. The list is presented in reverse chronological order according to their latest git commit (only if your version of Elvish supports the =order= builtin). I use this to get a quick summary of the status of my most commonly-used repos. The repositories to display can be provided in mutliple ways (if more than one is specified, the first one found is used):
 
