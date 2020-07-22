@@ -144,17 +144,21 @@ You can add or remove directories to the list by using the =chain:add-summary-re
   [~]─> cd ~/.elvish
   [~/.elvish]─[⎇ master]─> chain:add-summary-repo
   Repo /Users/taazadi1/.elvish added to the list
+
   [~/.elvish]─[⎇ master]─> chain:add-summary-repo ~/.emacs.d ~/.hammerspoon
   Repo /Users/taazadi1/.emacs.d added to the list
   Repo /Users/taazadi1/.hammerspoon added to the list
+
   [~/.elvish]─[⎇ master]─> chain:summary-status
   [2020-05-25] [OK] [⎇ master] ~/.elvish
   [2020-05-27] [OK] [⎇ master] ~/.emacs.d
   [2020-05-22] [OK] [⎇ master] ~/.hammerspoon
+
   [~/.elvish]─[⎇ master]─> chain:summary-status ~/.elvish/lib/github.com/zzamboni/*
   [2020-05-09] [OK] [⎇ master] ~/.elvish/lib/github.com/zzamboni/elvish-completions
   [2020-05-08] [OK] [⎇ master] ~/.elvish/lib/github.com/zzamboni/elvish-modules
   [2020-05-22] [●] [⎇ master] ~/.elvish/lib/github.com/zzamboni/elvish-themes
+
   [~/.elvish]─[⎇ master]─> chain:summary-status &only-dirty ~/.elvish/lib/github.com/zzamboni/*
   [2020-05-22] [●] [⎇ master] ~/.elvish/lib/github.com/zzamboni/elvish-themes
 #+end_src
