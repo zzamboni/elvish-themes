@@ -180,6 +180,7 @@ We use [[https://github.com/href/elvish-gitstatus][href's gitstatus]] library fo
 
 #+begin_src elvish
   use github.com/href/elvish-gitstatus/gitstatus
+  use github.com/zzamboni/elvish-modules/spinners
 #+end_src
 
 Set up the default values for the chains (all can be configured by assigning to the appropriate variable):
@@ -681,34 +682,11 @@ We define a couple of functions to read and write =$chain:summary-repos= from di
   }
 #+end_src
 
-We define helper functions to produce a progress indicator while the repo information is being collected. This can be useful particularly when using =&all=. The progress indicator can be disabled by setting =$chain:summary-progress-indicator= to =$false=. The indicator characters to show can be customized by storing a string or list in =$chain:summary-progress-steps=.
-
-#+begin_src elvish
-  summary-progress-indicator = $true
-  summary-progress-steps = "⡀⡁⡂⡃⡄⡅⡆⡇⡈⡉⡊⡋⡌⡍⡎⡏⡐⡑⡒⡓⡔⡕⡖⡗⡘⡙⡚⡛⡜⡝⡞⡟⡠⡡⡢⡣⡤⡥⡦⡧⡨⡩⡪⡫⡬⡭⡮⡯⡰⡱⡲⡳⡴⡵⡶⡷⡸⡹⡺⡻⡼⡽⡾⡿⢀⢁⢂⢃⢄⢅⢆⢇⢈⢉⢊⢋⢌⢍⢎⢏⢐⢑⢒⢓⢔⢕⢖⢗⢘⢙⢚⢛⢜⢝⢞⢟⢠⢡⢢⢣⢤⢥⢦⢧⢨⢩⢪⢫⢬⢭⢮⢯⢰⢱⢲⢳⢴⢵⢶⢷⢸⢹⢺⢻⢼⢽⢾⢿⣀⣁⣂⣃⣄⣅⣆⣇⣈⣉⣊⣋⣌⣍⣎⣏⣐⣑⣒⣓⣔⣕⣖⣗⣘⣙⣚⣛⣜⣝⣞⣟⣠⣡⣢⣣⣤⣥⣦⣧⣨⣩⣪⣫⣬⣭⣮⣯⣰⣱⣲⣳⣴⣵⣶⣷⣸⣹⣺⣻⣼⣽⣾⣿"
-
-  -progress-step = 0
-
-  fn -init-progress-indicator { -progress-step = 0 }
-
-  fn -advance-progress-indicator {
-    if $summary-progress-indicator {
-      print $summary-progress-steps[$-progress-step]"\r" >&2
-      inc = 1
-      if (eq (kind-of $summary-progress-steps string)) {
-        inc = (count $summary-progress-steps[$-progress-step])
-      }
-      -progress-step = (% (+ $-progress-step $inc) (count $summary-progress-steps))
-    }
-  }
-#+end_src
-
 The =chain:summary-data= function collects the data from a given set of repositories.
 
 #+begin_src elvish
   fn summary-data [repos]{
     each [r]{
-      -advance-progress-indicator
       try {
         cd $r
         -parse-git &with-timestamp
@@ -739,8 +717,6 @@ The =chain:summary-status= function is the main entry point to display the statu
   fn summary-status [@repos &all=$false &only-dirty=$false]{
     prev = $pwd
 
-    -init-progress-indicator
-
     # Determine how to sort the output. This only happens in newer
     # versions of Elvish (where the order function exists)
     use builtin
@@ -749,13 +725,12 @@ The =chain:summary-status= function is the main entry point to display the statu
       order-cmd~ = { order &less-than=[a b]{ <s $a[ts] $b[ts] } &reverse }
     }
 
-    # Read repo list from disk, cache in $chain:summary-repos
-    -read-summary-repos
-
     # Determine the list of repos to display:
     # 1) If the &all option is given, find them
     if $all {
-      repos = [($find-all-user-repos | each [r]{ put $r; -advance-progress-indicator })]
+      spinners:run &title="Finding all git repos" &style=blue {
+        repos = [($find-all-user-repos)]
+      }
     }
     # 2) If repos is not given nor defined through &all, use $chain:summary-repos
     if (eq $repos []) {
@@ -764,7 +739,7 @@ The =chain:summary-status= function is the main entry point to display the statu
     # 3) If repos is specified, just use it
 
     # Produce the output
-    summary-data $repos | order-cmd | each [r]{
+    spinners:run &title="Gathering repo data" &style=blue { summary-data $repos } | order-cmd | each [r]{
       status-display = $r[status]
       if (or (not $only-dirty) (not-eq $status-display [])) {
         if (eq $status-display []) {

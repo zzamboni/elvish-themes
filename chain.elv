@@ -10,6 +10,7 @@ use re
 use str
 
 use github.com/href/elvish-gitstatus/gitstatus
+use github.com/zzamboni/elvish-modules/spinners
 
 prompt-segments = $prompt-segments-defaults
 rprompt-segments = $rprompt-segments-defaults
@@ -311,27 +312,8 @@ fn -read-summary-repos {
   }
 }
 
-summary-progress-indicator = $true
-summary-progress-steps = "⡀⡁⡂⡃⡄⡅⡆⡇⡈⡉⡊⡋⡌⡍⡎⡏⡐⡑⡒⡓⡔⡕⡖⡗⡘⡙⡚⡛⡜⡝⡞⡟⡠⡡⡢⡣⡤⡥⡦⡧⡨⡩⡪⡫⡬⡭⡮⡯⡰⡱⡲⡳⡴⡵⡶⡷⡸⡹⡺⡻⡼⡽⡾⡿⢀⢁⢂⢃⢄⢅⢆⢇⢈⢉⢊⢋⢌⢍⢎⢏⢐⢑⢒⢓⢔⢕⢖⢗⢘⢙⢚⢛⢜⢝⢞⢟⢠⢡⢢⢣⢤⢥⢦⢧⢨⢩⢪⢫⢬⢭⢮⢯⢰⢱⢲⢳⢴⢵⢶⢷⢸⢹⢺⢻⢼⢽⢾⢿⣀⣁⣂⣃⣄⣅⣆⣇⣈⣉⣊⣋⣌⣍⣎⣏⣐⣑⣒⣓⣔⣕⣖⣗⣘⣙⣚⣛⣜⣝⣞⣟⣠⣡⣢⣣⣤⣥⣦⣧⣨⣩⣪⣫⣬⣭⣮⣯⣰⣱⣲⣳⣴⣵⣶⣷⣸⣹⣺⣻⣼⣽⣾⣿"
-
--progress-step = 0
-
-fn -init-progress-indicator { -progress-step = 0 }
-
-fn -advance-progress-indicator {
-  if $summary-progress-indicator {
-    print $summary-progress-steps[$-progress-step]"\r" >&2
-    inc = 1
-    if (eq (kind-of $summary-progress-steps string)) {
-      inc = (count $summary-progress-steps[$-progress-step])
-    }
-    -progress-step = (% (+ $-progress-step $inc) (count $summary-progress-steps))
-  }
-}
-
 fn summary-data [repos]{
   each [r]{
-    -advance-progress-indicator
     try {
       cd $r
       -parse-git &with-timestamp
@@ -358,8 +340,6 @@ fn summary-data [repos]{
 fn summary-status [@repos &all=$false &only-dirty=$false]{
   prev = $pwd
 
-  -init-progress-indicator
-
   # Determine how to sort the output. This only happens in newer
   # versions of Elvish (where the order function exists)
   use builtin
@@ -368,13 +348,12 @@ fn summary-status [@repos &all=$false &only-dirty=$false]{
     order-cmd~ = { order &less-than=[a b]{ <s $a[ts] $b[ts] } &reverse }
   }
 
-  # Read repo list from disk, cache in $chain:summary-repos
-  -read-summary-repos
-
   # Determine the list of repos to display:
   # 1) If the &all option is given, find them
   if $all {
-    repos = [($find-all-user-repos | each [r]{ put $r; -advance-progress-indicator })]
+    spinners:run &title="Finding all git repos" &style=blue {
+      repos = [($find-all-user-repos)]
+    }
   }
   # 2) If repos is not given nor defined through &all, use $chain:summary-repos
   if (eq $repos []) {
@@ -383,7 +362,7 @@ fn summary-status [@repos &all=$false &only-dirty=$false]{
   # 3) If repos is specified, just use it
 
   # Produce the output
-  summary-data $repos | order-cmd | each [r]{
+  spinners:run &title="Gathering repo data" &style=blue { summary-data $repos } | order-cmd | each [r]{
     status-display = $r[status]
     if (or (not $only-dirty) (not-eq $status-display [])) {
       if (eq $status-display []) {
