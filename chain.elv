@@ -348,6 +348,9 @@ fn summary-status [@repos &all=$false &only-dirty=$false]{
     order-cmd~ = { order &less-than=[a b]{ <s $a[ts] $b[ts] } &reverse }
   }
 
+  # Read repo list from disk, cache in $chain:summary-repos
+  -read-summary-repos
+
   # Determine the list of repos to display:
   # 1) If the &all option is given, find them
   if $all {
