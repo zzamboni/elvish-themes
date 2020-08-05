@@ -187,7 +187,7 @@ segment[git-combined] = {
   } $-git-indicator-segments)]
   if (> (count $indicators) 0) {
     color = (-segment-style git-combined)
-    put (-colorized '[' $color) $@indicators (-colorized ']' $color)
+    put (-colorized $prompt-segment-delimiters[0] $color) $@indicators (-colorized $prompt-segment-delimiters[1] $color)
   }
 }
 
