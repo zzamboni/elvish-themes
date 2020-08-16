@@ -19,7 +19,7 @@ Ported to Elvish by Diego Zamboni <diego@zzamboni.org>.
 
 This file is written in [[http://www.howardism.org/Technical/Emacs/literate-programming-tutorial.html][literate programming style]], to make it easy to explain. See [[file:chain.elv][chain.elv]] for the generated file.
 
-* Table of Contents                                          :TOC_3:noexport:
+* Table of Contents :TOC_3:noexport:
 - [[#use][Use]]
   - [[#prompt-theme-configuration][Prompt theme configuration]]
   - [[#git-repo-summary-display][Git repo summary display]]
@@ -344,7 +344,7 @@ The =-colorized-glyph= returns the glyph for the given segment, with its corresp
 
 #+begin_src elvish
   fn -colorized-glyph [segment-name @extra-text]{
-    -colorized (-glyph $segment-name)(joins "" $extra-text) (-segment-style $segment-name)
+    -colorized (-glyph $segment-name)(str:join "" $extra-text) (-segment-style $segment-name)
   }
 #+end_src
 
@@ -359,7 +359,7 @@ Build a prompt segment in the given style, surrounded by square brackets. The fi
     if (or (has-key $default-glyph $segment-or-style) (has-key $glyph $segment-or-style)) {
       texts = [ (-glyph $segment-or-style) $@texts ]
     }
-    text = $prompt-segment-delimiters[0](joins ' ' $texts)$prompt-segment-delimiters[1]
+    text = $prompt-segment-delimiters[0](str:join ' ' $texts)$prompt-segment-delimiters[1]
     -colorized $text $style
   }
 #+end_src
@@ -661,9 +661,9 @@ We call the =init= function automatically on module load.
   The contents of this file can be manipulated using the =chain:add-summary-repo= and =chain:remove-summary-repo=.
 
 The list of repositories read from the file is cached in =$chain:summary-repos=.
-  #+begin_src elvish
-    summary-repos = []
-  #+end_src
+#+begin_src elvish
+  summary-repos = []
+#+end_src
 
 We define a couple of functions to read and write =$chain:summary-repos= from disk.
 
