@@ -107,7 +107,7 @@ fn -segment-style [segment-name]{
 }
 
 fn -colorized-glyph [segment-name @extra-text]{
-  -colorized (-glyph $segment-name)(joins "" $extra-text) (-segment-style $segment-name)
+  -colorized (-glyph $segment-name)(str:join "" $extra-text) (-segment-style $segment-name)
 }
 
 fn prompt-segment [segment-or-style @texts]{
@@ -118,7 +118,7 @@ fn prompt-segment [segment-or-style @texts]{
   if (or (has-key $default-glyph $segment-or-style) (has-key $glyph $segment-or-style)) {
     texts = [ (-glyph $segment-or-style) $@texts ]
   }
-  text = $prompt-segment-delimiters[0](joins ' ' $texts)$prompt-segment-delimiters[1]
+  text = $prompt-segment-delimiters[0](str:join ' ' $texts)$prompt-segment-delimiters[1]
   -colorized $text $style
 }
 
