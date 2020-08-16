@@ -137,7 +137,7 @@ segment[git-branch] = {
   branch = $last-status[local-branch]
   if (not-eq $branch $nil) {
     if (eq $branch '') {
-      branch = $last-status[commit][0:7]
+      branch = $last-status[commit][0..7]
     }
     prompt-segment git-branch $branch
   }

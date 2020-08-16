@@ -400,7 +400,7 @@ The =git-branch= segment indicates the current branch name. If we are in a detac
     branch = $last-status[local-branch]
     if (not-eq $branch $nil) {
       if (eq $branch '') {
-        branch = $last-status[commit][0:7]
+        branch = $last-status[commit][0..7]
       }
       prompt-segment git-branch $branch
     }
