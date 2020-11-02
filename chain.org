@@ -17,7 +17,7 @@ This is my implementation for [[http://elvish.io][Elvish]] of the /Chain/ prompt
 
 Ported to Elvish by Diego Zamboni <diego@zzamboni.org>.
 
-This file is written in [[http://www.howardism.org/Technical/Emacs/literate-programming-tutorial.html][literate programming style]], to make it easy to explain. See [[file:chain.elv][chain.elv]] for the generated file.
+This file is written in [[https://leanpub.com/lit-config][literate programming style]], to make it easy to explain. See [[file:chain.elv][chain.elv]] for the generated file.
 
 * Table of Contents :TOC_3:noexport:
 - [[#use][Use]]
