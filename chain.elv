@@ -204,8 +204,8 @@ segment[dir] = {
   prompt-segment dir (-prompt-pwd)
 }
 
+uid = (id -u)
 segment[su] = {
-  uid = (id -u)
   if (eq $uid $root-id) {
     prompt-segment su
   }

@@ -510,11 +510,11 @@ segment[dir] = {
 
 *** su
 
-This segment outputs a glyph if the current user has a privileged ID (=root= by default, with ID 0, but can be configured by changing =$root-id=).
+This segment outputs a glyph if the current user has a privileged ID (=root= by default, with ID 0, but can be configured by changing =$root-id=). We precompute the UID since it cannot change in the middle of the session. This avoids calling the =id= command on every prompt.
 
 #+begin_src elvish
+uid = (id -u)
 segment[su] = {
-  uid = (id -u)
   if (eq $uid $root-id) {
     prompt-segment su
   }
