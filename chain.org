@@ -17,6 +17,8 @@ This is my implementation for [[http://elvish.io][Elvish]] of the /Chain/ prompt
 
 Ported to Elvish by Diego Zamboni <diego@zzamboni.org>.
 
+[[file:images/screenshot.jpg]]
+
 This file is written in [[https://leanpub.com/lit-config][literate programming style]], to make it easy to explain. See [[file:chain.elv][chain.elv]] for the generated file.
 
 * Table of Contents :TOC_3:noexport:
