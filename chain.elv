@@ -8,6 +8,7 @@ rprompt-segments-defaults = [ ]
 
 use re
 use str
+use path
 
 use github.com/href/elvish-gitstatus/gitstatus
 use github.com/zzamboni/elvish-modules/spinners
@@ -292,7 +293,7 @@ fn init {
 init
 
 find-all-user-repos = {
-  fd -H -I -t d '^.git$' ~ | each $path-dir~
+  fd -H -I -t d '^.git$' ~ | each $path:dir~
 }
 
 summary-repos-file = ~/.elvish/package-data/elvish-themes/chain-summary-repos.json
@@ -300,7 +301,7 @@ summary-repos-file = ~/.elvish/package-data/elvish-themes/chain-summary-repos.js
 summary-repos = []
 
 fn -write-summary-repos {
-  mkdir -p (path-dir $summary-repos-file)
+  mkdir -p (path:dir $summary-repos-file)
   to-json [$summary-repos] > $summary-repos-file
 }
 
