@@ -51,8 +51,11 @@ You can do this interactively or from your =~/.elvish/rc.elv= file. If you want 
 
 Add the following to you =~/.elvish/rc.elv= file to load and configure the theme:
 
+*Note:* You have to call =chain:init= to set up the prompt, just loading the module does not configure it.
+
 #+begin_src elvish :tangle no
 use github.com/zzamboni/elvish-themes/chain
+chain:init
 #+end_src
 
 ** Prompt theme configuration
@@ -640,11 +643,7 @@ fn init {
 }
 #+end_src
 
-We call the =init= function automatically on module load.
-
-#+begin_src elvish
-init
-#+end_src
+*NEW:* Note that we *do not* call the =init= function automatically on module load. This has changed in the latest version, so that the module can be loaded without setting up the prompt right away (e.g. to use the chain segments for other purposes).
 
 ** Bonus: displaying the status of several git repos at once
 

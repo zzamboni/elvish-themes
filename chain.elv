@@ -290,8 +290,6 @@ fn init {
   edit:rprompt = $rprompt~
 }
 
-init
-
 find-all-user-repos = {
   fd -H -I -t d '^.git$' ~ | each $path:dir~
 }
