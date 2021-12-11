@@ -1,5 +1,3 @@
-#+property: header-args:elvish :tangle chain.elv
-#+property: header-args :mkdirp yes :comments no
 #+startup: indent
 
 #+title: Elvish Chain theme prompt
@@ -171,6 +169,11 @@ Repo /Users/taazadi1/.hammerspoon added to the list
 By default, a progress indicator is shown while the repository data is being collected. You can disable this by setting =$chain:summary-progress-indicator= to =$false=. The indicator characters to show can be customized by storing a string or list in =$chain:summary-progress-steps=.
 
 * Implementation
+* Implementation
+:PROPERTIES:
+:header-args:elvish: :tangle (concat (file-name-sans-extension (buffer-file-name)) ".elv")
+:header-args: :mkdirp yes :comments link
+:END:
 
 ** Base code and default values
 
