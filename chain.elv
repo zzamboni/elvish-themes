@@ -3,8 +3,8 @@
 # https://github.com/zzamboni/elvish-themes/blob/master/chain.org.
 # You should make any changes there and regenerate it from Emacs org-mode using C-c C-v t
 
-prompt-segments-defaults = [ su dir git-branch git-combined arrow ]
-rprompt-segments-defaults = [ ]
+var prompt-segments-defaults = [ su dir git-branch git-combined arrow ]
+var rprompt-segments-defaults = [ ]
 
 use re
 use str
@@ -13,10 +13,10 @@ use path
 use github.com/href/elvish-gitstatus/gitstatus
 use github.com/zzamboni/elvish-modules/spinners
 
-prompt-segments = $prompt-segments-defaults
-rprompt-segments = $rprompt-segments-defaults
+var prompt-segments = $prompt-segments-defaults
+var rprompt-segments = $rprompt-segments-defaults
 
-default-glyph = [
+var default-glyph = [
   &git-branch=    "⎇"
   &git-dirty=     "●"
   &git-ahead=     "⬆"
@@ -30,7 +30,7 @@ default-glyph = [
   &arrow=         ">"
 ]
 
-default-segment-style = [
+var default-segment-style = [
   &git-branch=    [ blue         ]
   &git-dirty=     [ yellow       ]
   &git-ahead=     [ red          ]
@@ -49,41 +49,41 @@ default-segment-style = [
   &timestamp=     [ bright-black ]
 ]
 
-glyph = [&]
-segment-style = [&]
+var glyph = [&]
+var segment-style = [&]
 
-prompt-pwd-dir-length = 1
+var prompt-pwd-dir-length = 1
 
-timestamp-format = "%R"
+var timestamp-format = "%R"
 
-root-id = 0
+var root-id = 0
 
-bold-prompt = $false
+var bold-prompt = $false
 
-show-last-chain = $true
+var show-last-chain = $true
 
-space-after-arrow = $true
+var space-after-arrow = $true
 
-git-get-timestamp = { git log -1 --date=short --pretty=format:%cd }
+var git-get-timestamp = { git log -1 --date=short --pretty=format:%cd }
 
-prompt-segment-delimiters = "[]"
+var prompt-segment-delimiters = "[]"
 # prompt-segment-delimiters = [ "<<" ">>" ]
 
 fn -session-color {
-  valid-colors = [ red green yellow blue magenta cyan white bright-black bright-red bright-green bright-yellow bright-blue bright-magenta bright-cyan bright-white ]
+  var valid-colors = [ red green yellow blue magenta cyan white bright-black bright-red bright-green bright-yellow bright-blue bright-magenta bright-cyan bright-white ]
   put $valid-colors[(% $pid (count $valid-colors))]
 }
 
-fn -colorized [what @color]{
+fn -colorized {|what @color|
   if (and (not-eq $color []) (eq (kind-of $color[0]) list)) {
-    color = [(all $color[0])]
+    set color = [(all $color[0])]
   }
   if (and (not-eq $color [default]) (not-eq $color [])) {
     if (eq $color [session]) {
-      color = [(-session-color)]
+      set color = [(-session-color)]
     }
     if $bold-prompt {
-      color = [ $@color bold ]
+      set color = [ $@color bold ]
     }
     styled $what $@color
   } else {
@@ -91,7 +91,7 @@ fn -colorized [what @color]{
   }
 }
 
-fn -glyph [segment-name]{
+fn -glyph {|segment-name|
   if (has-key $glyph $segment-name) {
     put $glyph[$segment-name]
   } else {
@@ -99,7 +99,7 @@ fn -glyph [segment-name]{
   }
 }
 
-fn -segment-style [segment-name]{
+fn -segment-style {|segment-name|
   if (has-key $segment-style $segment-name) {
     put $segment-style[$segment-name]
   } else {
@@ -107,60 +107,60 @@ fn -segment-style [segment-name]{
   }
 }
 
-fn -colorized-glyph [segment-name @extra-text]{
+fn -colorized-glyph {|segment-name @extra-text|
   -colorized (-glyph $segment-name)(str:join "" $extra-text) (-segment-style $segment-name)
 }
 
-fn prompt-segment [segment-or-style @texts]{
-  style = $segment-or-style
+fn prompt-segment {|segment-or-style @texts|
+  var style = $segment-or-style
   if (or (has-key $default-segment-style $segment-or-style) (has-key $segment-style $segment-or-style)) {
-    style = (-segment-style $segment-or-style)
+    set style = (-segment-style $segment-or-style)
   }
   if (or (has-key $default-glyph $segment-or-style) (has-key $glyph $segment-or-style)) {
-    texts = [ (-glyph $segment-or-style) $@texts ]
+    set texts = [ (-glyph $segment-or-style) $@texts ]
   }
-  text = $prompt-segment-delimiters[0](str:join ' ' $texts)$prompt-segment-delimiters[1]
+  var text = $prompt-segment-delimiters[0](str:join ' ' $texts)$prompt-segment-delimiters[1]
   -colorized $text $style
 }
 
-segment = [&]
+var segment = [&]
 
-last-status = [&]
+var last-status = [&]
 
-fn -parse-git [&with-timestamp=$false]{
-  last-status = (gitstatus:query $pwd)
+fn -parse-git {|&with-timestamp=$false|
+  set last-status = (gitstatus:query $pwd)
   if $with-timestamp {
-    last-status[timestamp] = ($git-get-timestamp)
+    set last-status[timestamp] = ($git-get-timestamp)
   }
 }
 
-segment[git-branch] = {
-  branch = $last-status[local-branch]
+set segment[git-branch] = {
+  var branch = $last-status[local-branch]
   if (not-eq $branch $nil) {
     if (eq $branch '') {
-      branch = $last-status[commit][0..7]
+      set branch = $last-status[commit][0..7]
     }
     prompt-segment git-branch $branch
   }
 }
 
-segment[git-timestamp] = {
-  ts = $nil
+set segment[git-timestamp] = {
+  var ts = $nil
   if (has-key $last-status timestamp) {
-    ts = $last-status[timestamp]
+    set ts = $last-status[timestamp]
   } else {
-    ts = ($git-get-timestamp)
+    set ts = ($git-get-timestamp)
   }
   prompt-segment git-timestamp $ts
 }
 
-fn -show-git-indicator [segment]{
-  status-name = [
+fn -show-git-indicator {|segment|
+  var status-name = [
     &git-dirty=  unstaged        &git-staged=    staged
     &git-ahead=  commits-ahead   &git-untracked= untracked
     &git-behind= commits-behind  &git-deleted=   unstaged
   ]
-  value = $last-status[$status-name[$segment]]
+  var value = $last-status[$status-name[$segment]]
   # The indicator must show if the element is >0 or a non-empty list
   if (eq (kind-of $value) list) {
     not-eq $value []
@@ -169,31 +169,31 @@ fn -show-git-indicator [segment]{
   }
 }
 
-fn -git-prompt-segment [segment]{
+fn -git-prompt-segment {|segment|
   if (-show-git-indicator $segment) {
     prompt-segment $segment
   }
 }
 
 #-git-indicator-segments = [untracked deleted dirty staged ahead behind]
--git-indicator-segments = [untracked dirty staged ahead behind]
+var -git-indicator-segments = [untracked dirty staged ahead behind]
 
-each [ind]{
-  segment[git-$ind] = { -git-prompt-segment git-$ind }
+each {|ind|
+  set segment[git-$ind] = { -git-prompt-segment git-$ind }
 } $-git-indicator-segments
 
-segment[git-combined] = {
-  indicators = [(each [ind]{
+set segment[git-combined] = {
+  var indicators = [(each {|ind|
         if (-show-git-indicator git-$ind) { -colorized-glyph git-$ind }
   } $-git-indicator-segments)]
   if (> (count $indicators) 0) {
-    color = (-segment-style git-combined)
+    var color = (-segment-style git-combined)
     put (-colorized $prompt-segment-delimiters[0] $color) $@indicators (-colorized $prompt-segment-delimiters[1] $color)
   }
 }
 
 fn -prompt-pwd {
-  tmp = (tilde-abbr $pwd)
+  var tmp = (tilde-abbr $pwd)
   if (== $prompt-pwd-dir-length 0) {
     put $tmp
   } else {
@@ -201,33 +201,33 @@ fn -prompt-pwd {
   }
 }
 
-segment[dir] = {
+set segment[dir] = {
   prompt-segment dir (-prompt-pwd)
 }
 
-uid = (id -u)
-segment[su] = {
+var uid = (id -u)
+set segment[su] = {
   if (eq $uid $root-id) {
     prompt-segment su
   }
 }
 
-segment[timestamp] = {
+set segment[timestamp] = {
   prompt-segment timestamp (date +$timestamp-format)
 }
 
-segment[session] = {
+set segment[session] = {
   prompt-segment session
 }
 
-segment[arrow] = {
-  end-text = ''
-  if $space-after-arrow { end-text = ' ' }
+set segment[arrow] = {
+  var end-text = ''
+  if $space-after-arrow { set end-text = ' ' }
   -colorized-glyph arrow $end-text
 }
 
-fn -interpret-segment [seg]{
-  k = (kind-of $seg)
+fn -interpret-segment {|seg|
+  var k = (kind-of $seg)
   if (eq $k 'fn') {
     # If it's a lambda, run it
     $seg
@@ -247,7 +247,7 @@ fn -interpret-segment [seg]{
   }
 }
 
-fn -build-chain [segments]{
+fn -build-chain {|segments|
   if (eq $segments []) {
     return
   }
@@ -257,10 +257,10 @@ fn -build-chain [segments]{
       break
     }
   }
-  first = $true
-  output = ""
+  var first = $true
+  var output = ""
   for seg $segments {
-    output = [(-interpret-segment $seg)]
+    set output = [(-interpret-segment $seg)]
     if (> (count $output) 0) {
       if (not $first) {
         if (or $show-last-chain (not-eq $seg $segments[-1])) {
@@ -268,7 +268,7 @@ fn -build-chain [segments]{
         }
       }
       put $@output
-      first = $false
+      set first = $false
     }
   }
 }
@@ -286,17 +286,17 @@ fn rprompt {
 }
 
 fn init {
-  edit:prompt = $prompt~
-  edit:rprompt = $rprompt~
+  set edit:prompt = $prompt~
+  set edit:rprompt = $rprompt~
 }
 
-find-all-user-repos = {
+var find-all-user-repos = {
   fd -H -I -t d '^.git$' ~ | each $path:dir~
 }
 
-summary-repos-file = ~/.elvish/package-data/elvish-themes/chain-summary-repos.json
+var summary-repos-file = ~/.elvish/package-data/elvish-themes/chain-summary-repos.json
 
-summary-repos = []
+var summary-repos = []
 
 fn -write-summary-repos {
   mkdir -p (path:dir $summary-repos-file)
@@ -305,18 +305,18 @@ fn -write-summary-repos {
 
 fn -read-summary-repos {
   try {
-    summary-repos = (from-json < $summary-repos-file)
+    set summary-repos = (from-json < $summary-repos-file)
   } except {
-    summary-repos = []
+    set summary-repos = []
   }
 }
 
-fn summary-data [repos]{
-  each [r]{
+fn summary-data {|repos|
+  each {|r|
     try {
       cd $r
       -parse-git &with-timestamp
-      status = [($segment[git-combined])]
+      var status = [($segment[git-combined])]
       put [
         &repo= (tilde-abbr $r)
         &status= $status
@@ -336,15 +336,15 @@ fn summary-data [repos]{
   } $repos
 }
 
-fn summary-status [@repos &all=$false &only-dirty=$false]{
-  prev = $pwd
+fn summary-status {|@repos &all=$false &only-dirty=$false|
+  var prev = $pwd
 
   # Determine how to sort the output. This only happens in newer
   # versions of Elvish (where the order function exists)
   use builtin
-  order-cmd~ = $all~
+  var order-cmd~ = $all~
   if (has-key $builtin: order~) {
-    order-cmd~ = { order &less-than=[a b]{ <s $a[ts] $b[ts] } &reverse }
+    set order-cmd~ = { order &less-than={|a b| <s $a[ts] $b[ts] } &reverse }
   }
 
   # Read repo list from disk, cache in $chain:summary-repos
@@ -354,54 +354,54 @@ fn summary-status [@repos &all=$false &only-dirty=$false]{
   # 1) If the &all option is given, find them
   if $all {
     spinners:run &title="Finding all git repos" &style=blue {
-      repos = [($find-all-user-repos)]
+      set repos = [($find-all-user-repos)]
     }
   }
   # 2) If repos is not given nor defined through &all, use $chain:summary-repos
   if (eq $repos []) {
-    repos = $summary-repos
+    set repos = $summary-repos
   }
   # 3) If repos is specified, just use it
 
   # Produce the output
-  spinners:run &title="Gathering repo data" &style=blue { summary-data $repos } | order-cmd | each [r]{
-    status-display = $r[status]
+  spinners:run &title="Gathering repo data" &style=blue { summary-data $repos } | order-cmd | each {|r|
+    var status-display = $r[status]
     if (or (not $only-dirty) (not-eq $status-display [])) {
       if (eq $status-display []) {
-        status-display = [(-colorized "[" session) (styled OK green) (-colorized "]" session)]
+        set status-display = [(-colorized "[" session) (styled OK green) (-colorized "]" session)]
       }
-      @status = $r[timestamp] ' ' (all $status-display) ' ' $r[branch]
+      var @status = $r[timestamp] ' ' (all $status-display) ' ' $r[branch]
       echo &sep="" $@status ' ' (-colorized $r[repo] (-segment-style git-repo))
     }
   }
   cd $prev
 }
 
-fn add-summary-repo [@dirs]{
+fn add-summary-repo {|@dirs|
   if (eq $dirs []) {
-    dirs = [ $pwd ]
+    set dirs = [ $pwd ]
   }
   -read-summary-repos
-  each [d]{
+  each {|d|
     if (has-value $summary-repos $d) {
       echo (styled "Repo "$d" is already in the list" yellow)
     } else {
-      summary-repos = [ $@summary-repos $d ]
+      set summary-repos = [ $@summary-repos $d ]
       echo (styled "Repo "$d" added to the list" green)
     }
   } $dirs
   -write-summary-repos
 }
 
-fn remove-summary-repo [@dirs]{
+fn remove-summary-repo {|@dirs|
   if (eq $dirs []) {
-    dirs = [ $pwd ]
+    set dirs = [ $pwd ]
   }
   -read-summary-repos
-  @new-repos = (each [d]{
+  var @new-repos = (each {|d|
       if (not (has-value $dirs $d)) { put $d }
   } $summary-repos)
-  each [d]{
+  each {|d|
     if (has-value $summary-repos $d) {
       echo (styled "Repo "$d" removed from the list." green)
     } else {
@@ -409,6 +409,6 @@ fn remove-summary-repo [@dirs]{
     }
   } $dirs
 
-  summary-repos = $new-repos
+  set summary-repos = $new-repos
   -write-summary-repos
 }
