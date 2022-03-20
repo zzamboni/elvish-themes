@@ -680,7 +680,7 @@ We define a couple of functions to read and write =$chain:summary-repos= from di
   fn -read-summary-repos {
     try {
       set summary-repos = (from-json < $summary-repos-file)
-    } except {
+    } catch {
       set summary-repos = []
     }
   }
@@ -702,7 +702,7 @@ The =chain:summary-data= function collects the data from a given set of reposito
           &timestamp= ($segment[git-timestamp])
           &branch= ($segment[git-branch])
         ]
-      } except e {
+      } catch e {
         put [
           &repo= (tilde-abbr $r)
           &status= [(styled '['(to-string $e)']' red)]

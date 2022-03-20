@@ -306,7 +306,7 @@ fn -write-summary-repos {
 fn -read-summary-repos {
   try {
     set summary-repos = (from-json < $summary-repos-file)
-  } except {
+  } catch {
     set summary-repos = []
   }
 }
@@ -324,7 +324,7 @@ fn summary-data {|repos|
         &timestamp= ($segment[git-timestamp])
         &branch= ($segment[git-branch])
       ]
-    } except e {
+    } catch e {
       put [
         &repo= (tilde-abbr $r)
         &status= [(styled '['(to-string $e)']' red)]
